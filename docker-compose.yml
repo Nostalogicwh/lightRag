@@ -1,6 +1,6 @@
 services:
-  lightrag:
-    container_name: lightrag
+  lightrag-2:
+    container_name: lightrag-2
     image: ghcr.io/hkuds/lightrag:latest
     build:
       context: .
@@ -8,7 +8,7 @@ services:
       tags:
         - ghcr.io/hkuds/lightrag:latest
     ports:
-      - "${PORT:-9621}:9621"
+      - "${PORT:-9622}:9621"
     volumes:
       - ./lightrag/prompt.py:/app/lightrag/prompt.py
       - ./lightrag/operate.py:/app/lightrag/operate.py
@@ -20,9 +20,16 @@ services:
       - ./data/rag_storage:/app/data/rag_storage
       - ./data/inputs:/app/data/inputs
       - ./config.ini:/app/config.ini
+      - ./tools/clean_annotation_memory.py:/app/tools/clean_annotation_memory.py
       - ./.env:/app/.env
     env_file:
       - .env
+    networks:
+      - lightrag2_network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+networks:
+  lightrag2_network:
+    driver: bridge

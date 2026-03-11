@@ -10,8 +10,6 @@ __pycache__/
 .venv/
 venv/
 
-# Enviroment Variable Files
-.env
 
 # Build / Distribution
 dist/
@@ -83,3 +81,4 @@ CLAUDE.md
   data/
   .idea/
   .github/
+.env

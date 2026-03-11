@@ -7264,38 +7264,6 @@
       "remove_parameters": [],
       "remove_rules": []
     },
-    "开合性能型式试验 > 开合性能型式试验 > 电寿命试验": {
-      "test_name": "电寿命试验",
-      "report_type": "开合性能型式试验",
-      "category": "开合性能型式试验",
-      "path_parts": [
-        "型式试验",
-        "开合性能型式试验",
-        "电寿命试验"
-      ],
-      "path_key": "开合性能型式试验 > 开合性能型式试验 > 电寿命试验",
-      "skip": true,
-      "note": "这个不要",
-      "parameters": [],
-      "remove_parameters": [],
-      "remove_rules": []
-    },
-    "型式试验 > 开合性能型式试验 > 电寿命试验": {
-      "test_name": "电寿命试验",
-      "report_type": "开合性能型式试验",
-      "category": "开合性能型式试验",
-      "path_parts": [
-        "型式试验",
-        "开合性能型式试验",
-        "电寿命试验"
-      ],
-      "path_key": "开合性能型式试验 > 开合性能型式试验 > 电寿命试验",
-      "skip": true,
-      "note": "这个不要",
-      "parameters": [],
-      "remove_parameters": [],
-      "remove_rules": []
-    },
     "开合性能型式试验 > 开合性能型式试验 > 辅助触头开断能力试验": {
       "test_name": "辅助触头开断能力试验",
       "report_type": "开合性能型式试验",
@@ -21724,40 +21692,7 @@
         "remove_rules": []
       }
     ],
-    "电寿命试验": [
-      {
-        "test_name": "电寿命试验",
-        "report_type": "开合性能型式试验",
-        "category": "开合性能型式试验",
-        "path_parts": [
-          "型式试验",
-          "开合性能型式试验",
-          "电寿命试验"
-        ],
-        "path_key": "开合性能型式试验 > 开合性能型式试验 > 电寿命试验",
-        "skip": true,
-        "note": "这个不要",
-        "parameters": [],
-        "remove_parameters": [],
-        "remove_rules": []
-      },
-      {
-        "test_name": "电寿命试验",
-        "report_type": "开合性能型式试验",
-        "category": "开合性能型式试验",
-        "path_parts": [
-          "型式试验",
-          "开合性能型式试验",
-          "电寿命试验"
-        ],
-        "path_key": "开合性能型式试验 > 开合性能型式试验 > 电寿命试验",
-        "skip": true,
-        "note": "这个不要",
-        "parameters": [],
-        "remove_parameters": [],
-        "remove_rules": []
-      }
-    ],
+    "电寿命试验": [],
     "辅助触头开断能力试验": [
       {
         "test_name": "辅助触头开断能力试验",

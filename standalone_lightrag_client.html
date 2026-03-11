@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LightRAG Standalone Client</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --panel: #fffdf8;
+      --ink: #1e1d1a;
+      --muted: #6f6a5f;
+      --line: #d7cfbf;
+      --accent: #0b6b61;
+      --accent-2: #d97a2b;
+      --danger: #b63f2a;
+      --shadow: 0 16px 40px rgba(53, 43, 24, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "SF Mono", "Menlo", "Consolas", monospace;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(217, 122, 43, 0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(11, 107, 97, 0.12), transparent 30%),
+        linear-gradient(180deg, #f7f4ec 0%, #f1ebdf 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1400px, calc(100vw - 32px));
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 420px minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(245,241,232,0.85));
+    }
+
+    .panel-header h1,
+    .panel-header h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .panel-body {
+      padding: 18px 20px 20px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(11, 107, 97, 0.12);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .checkbox-row input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #ece6d8;
+      color: var(--ink);
+    }
+
+    .warn {
+      background: var(--accent-2);
+      color: #fff;
+    }
+
+    .status {
+      min-height: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .chat-panel {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .messages {
+      padding: 20px;
+      overflow: auto;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0)),
+        repeating-linear-gradient(
+          180deg,
+          transparent 0,
+          transparent 27px,
+          rgba(215, 207, 191, 0.16) 28px
+        );
+    }
+
+    .message {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.9);
+      overflow: hidden;
+    }
+
+    .message.user {
+      border-color: rgba(217, 122, 43, 0.35);
+      background: rgba(255, 246, 238, 0.95);
+    }
+
+    .message.assistant {
+      border-color: rgba(11, 107, 97, 0.28);
+      background: rgba(244, 253, 251, 0.95);
+    }
+
+    .message-header {
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(215, 207, 191, 0.7);
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .message-content {
+      padding: 14px 14px 16px;
+      white-space: pre-wrap;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .composer {
+      padding: 16px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(245,241,232,0.6), rgba(255,255,255,0.92));
+      display: grid;
+      gap: 10px;
+    }
+
+    .composer textarea {
+      min-height: 120px;
+    }
+
+    .composer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel">
+      <div class="panel-header">
+        <h1>LightRAG 控制台</h1>
+        <p>单文件静态页面。直接调用现有 LightRAG 后端，不改 Docker 镜像内置前端。</p>
+      </div>
+      <div class="panel-body stack">
+        <div class="stack">
+          <label>
+            Backend Base URL
+            <input id="backendBaseUrl" type="text" value="http://localhost:9621" placeholder="http://localhost:9621">
+          </label>
+          <div class="grid-2">
+            <label>
+              API Key
+              <input id="apiKey" type="password" placeholder="可留空">
+            </label>
+            <label>
+              Bearer Token
+              <input id="bearerToken" type="password" placeholder="可留空">
+            </label>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="panel-header" style="padding: 0 0 10px; border: 0; background: transparent;">
+            <h2>文档上传</h2>
+            <p>当前只调用原生 `/documents/upload`。标准类型下拉框仅用于前端记录，暂不传后端。</p>
+          </div>
+          <div class="grid-2">
+            <label>
+              标准类型
+              <select id="standardProfile">
+                <option value="gb">国标</option>
+                <option value="industry">行标</option>
+                <option value="iec">国际标</option>
+              </select>
+            </label>
+            <label>
+              选择文件
+              <input id="uploadFile" type="file">
+            </label>
+          </div>
+          <div class="actions">
+            <button id="uploadBtn" class="primary">上传文档</button>
+          </div>
+          <div id="uploadStatus" class="status"></div>
+        </div>
+
+        <div class="stack">
+          <div class="panel-header" style="padding: 0 0 10px; border: 0; background: transparent;">
+            <h2>问答参数</h2>
+          </div>
+          <div class="grid-3">
+            <label>
+              Query Mode
+              <select id="queryMode">
+                <option value="mix">mix</option>
+                <option value="global">global</option>
+                <option value="hybrid">hybrid</option>
+                <option value="local">local</option>
+                <option value="naive">naive</option>
+                <option value="bypass">bypass</option>
+              </select>
+            </label>
+            <label>
+              top_k
+              <input id="topK" type="number" value="40" min="1">
+            </label>
+            <label>
+              chunk_top_k
+              <input id="chunkTopK" type="number" value="20" min="1">
+            </label>
+          </div>
+          <div class="grid-3">
+            <label>
+              max_entity_tokens
+              <input id="maxEntityTokens" type="number" value="6000" min="1">
+            </label>
+            <label>
+              max_relation_tokens
+              <input id="maxRelationTokens" type="number" value="6000" min="1">
+            </label>
+            <label>
+              max_total_tokens
+              <input id="maxTotalTokens" type="number" value="30000" min="1">
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>
+              history_turns
+              <input id="historyTurns" type="number" value="0" min="0">
+            </label>
+            <label>
+              response_type
+              <input id="responseType" type="text" value="Multiple Paragraphs">
+            </label>
+          </div>
+          <label>
+            User Prompt
+            <textarea id="userPrompt" placeholder="可选。会直接传给 /query 或 /query/stream 的 user_prompt 字段。"></textarea>
+          </label>
+          <div class="grid-2">
+            <label class="checkbox-row">
+              <input id="stream" type="checkbox" checked>
+              <span>流式响应</span>
+            </label>
+            <label class="checkbox-row">
+              <input id="enableRerank" type="checkbox" checked>
+              <span>enable_rerank</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel chat-panel">
+      <div class="panel-header">
+        <h2>问答区</h2>
+        <p>支持 `/query/stream` NDJSON 流式输出；若关闭流式，则走 `/query`。</p>
+      </div>
+      <div id="messages" class="messages"></div>
+      <div class="composer">
+        <label>
+          问题
+          <textarea id="queryInput" placeholder="输入你的问题。"></textarea>
+        </label>
+        <div class="composer-actions">
+          <div class="hint">标准类型当前只在页面侧记录，用于后续扩展标准 profile。</div>
+          <div class="actions">
+            <button id="clearChatBtn" class="secondary">清空对话</button>
+            <button id="sendBtn" class="primary">发送</button>
+          </div>
+        </div>
+        <div id="queryStatus" class="status"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      messages: [],
+      sending: false
+    };
+
+    const el = (id) => document.getElementById(id);
+
+    const backendBaseUrl = el('backendBaseUrl');
+    const apiKey = el('apiKey');
+    const bearerToken = el('bearerToken');
+    const standardProfile = el('standardProfile');
+    const uploadFile = el('uploadFile');
+    const uploadBtn = el('uploadBtn');
+    const uploadStatus = el('uploadStatus');
+    const queryMode = el('queryMode');
+    const topK = el('topK');
+    const chunkTopK = el('chunkTopK');
+    const maxEntityTokens = el('maxEntityTokens');
+    const maxRelationTokens = el('maxRelationTokens');
+    const maxTotalTokens = el('maxTotalTokens');
+    const historyTurns = el('historyTurns');
+    const responseType = el('responseType');
+    const userPrompt = el('userPrompt');
+    const stream = el('stream');
+    const enableRerank = el('enableRerank');
+    const queryInput = el('queryInput');
+    const sendBtn = el('sendBtn');
+    const clearChatBtn = el('clearChatBtn');
+    const queryStatus = el('queryStatus');
+    const messagesEl = el('messages');
+
+    function setStatus(target, text, isError = false) {
+      target.textContent = text || '';
+      target.classList.toggle('error', Boolean(isError));
+    }
+
+    function getHeaders(includeJson = true) {
+      const headers = {};
+      if (includeJson) headers['Content-Type'] = 'application/json';
+      if (apiKey.value.trim()) headers['X-API-Key'] = apiKey.value.trim();
+      if (bearerToken.value.trim()) headers['Authorization'] = `Bearer ${bearerToken.value.trim()}`;
+      return headers;
+    }
+
+    function buildQueryPayload(query) {
+      const payload = {
+        query,
+        mode: queryMode.value,
+        response_type: responseType.value.trim() || 'Multiple Paragraphs',
+        stream: stream.checked,
+        top_k: Number(topK.value),
+        chunk_top_k: Number(chunkTopK.value),
+        max_entity_tokens: Number(maxEntityTokens.value),
+        max_relation_tokens: Number(maxRelationTokens.value),
+        max_total_tokens: Number(maxTotalTokens.value),
+        history_turns: Number(historyTurns.value),
+        user_prompt: userPrompt.value,
+        enable_rerank: enableRerank.checked
+      };
+
+      const conversationHistory = state.messages.flatMap((msg) => {
+        if (!msg.content.trim()) return [];
+        return [{ role: msg.role, content: msg.content }];
+      });
+      if (conversationHistory.length) {
+        payload.conversation_history = conversationHistory;
+      }
+      return payload;
+    }
+
+    function addMessage(role, content) {
+      const msg = { role, content };
+      state.messages.push(msg);
+      renderMessages();
+      return state.messages.length - 1;
+    }
+
+    function updateMessage(index, content) {
+      if (state.messages[index]) {
+        state.messages[index].content = content;
+        renderMessages();
+      }
+    }
+
+    function renderMessages() {
+      messagesEl.innerHTML = '';
+      for (const msg of state.messages) {
+        const wrapper = document.createElement('article');
+        wrapper.className = `message ${msg.role}`;
+
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        header.textContent = msg.role === 'user' ? 'User' : 'Assistant';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.textContent = msg.content;
+
+        wrapper.appendChild(header);
+        wrapper.appendChild(content);
+        messagesEl.appendChild(wrapper);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function uploadDocument() {
+      const file = uploadFile.files[0];
+      if (!file) {
+        setStatus(uploadStatus, '请先选择文件。', true);
+        return;
+      }
+
+      setStatus(uploadStatus, `正在上传 ${file.name}...\n标准类型：${standardProfile.value}`);
+      uploadBtn.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(`${backendBaseUrl.value.replace(/\/$/, '')}/documents/upload`, {
+          method: 'POST',
+          headers: getHeaders(false),
+          body: formData
+        });
+
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { raw: text };
+        }
+
+        if (!response.ok) {
+          throw new Error(data.detail || data.message || text || `HTTP ${response.status}`);
+        }
+
+        setStatus(
+          uploadStatus,
+          `上传成功\n文件：${file.name}\n标准类型：${standardProfile.value}\ntrack_id：${data.track_id || 'N/A'}\nmessage：${data.message || ''}`
+        );
+      } catch (error) {
+        setStatus(uploadStatus, `上传失败：${error.message}`, true);
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    async function sendQuery() {
+      const query = queryInput.value.trim();
+      if (!query || state.sending) return;
+
+      state.sending = true;
+      sendBtn.disabled = true;
+      setStatus(queryStatus, `发送中...\n标准类型：${standardProfile.value}`);
+
+      addMessage('user', query);
+      queryInput.value = '';
+      const assistantIndex = addMessage('assistant', '');
+
+      const payload = buildQueryPayload(query);
+      const base = backendBaseUrl.value.replace(/\/$/, '');
+
+      try {
+        if (stream.checked) {
+          await sendStreamQuery(base, payload, assistantIndex);
+        } else {
+          const response = await fetch(`${base}/query`, {
+            method: 'POST',
+            headers: getHeaders(true),
+            body: JSON.stringify({ ...payload, stream: false })
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail || data.message || `HTTP ${response.status}`);
+          }
+          updateMessage(assistantIndex, data.response || '');
+        }
+        setStatus(queryStatus, `完成\n标准类型：${standardProfile.value}`);
+      } catch (error) {
+        updateMessage(assistantIndex, `请求失败：${error.message}`);
+        setStatus(queryStatus, `问答失败：${error.message}`, true);
+      } finally {
+        state.sending = false;
+        sendBtn.disabled = false;
+      }
+    }
+
+    async function sendStreamQuery(base, payload, assistantIndex) {
+      const response = await fetch(`${base}/query/stream`, {
+        method: 'POST',
+        headers: {
+          ...getHeaders(true),
+          'Accept': 'application/x-ndjson'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `HTTP ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error('响应体为空。');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let answer = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          let parsed;
+          try {
+            parsed = JSON.parse(trimmed);
+          } catch (err) {
+            throw new Error(`流式 JSON 解析失败：${trimmed}`);
+          }
+          if (parsed.response) {
+            answer += parsed.response;
+            updateMessage(assistantIndex, answer);
+          } else if (parsed.error) {
+            throw new Error(parsed.error);
+          }
+        }
+      }
+
+      if (buffer.trim()) {
+        const parsed = JSON.parse(buffer.trim());
+        if (parsed.response) {
+          answer += parsed.response;
+          updateMessage(assistantIndex, answer);
+        } else if (parsed.error) {
+          throw new Error(parsed.error);
+        }
+      }
+    }
+
+    function clearChat() {
+      state.messages = [];
+      renderMessages();
+      setStatus(queryStatus, '');
+    }
+
+    uploadBtn.addEventListener('click', uploadDocument);
+    sendBtn.addEventListener('click', sendQuery);
+    clearChatBtn.addEventListener('click', clearChat);
+    queryInput.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        sendQuery();
+      }
+    });
+
+    renderMessages();
+  </script>
+</body>
+</html>
