@@ -1,0 +1,3007 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-06T09:10:32.324Z",
+  "tree": {
+    "name": "型式试验",
+    "children": [
+      {
+        "name": "绝缘性能型式试验",
+        "children": [
+          {
+            "name": "工频耐受电压试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "介质性质: 正常或充气充油"
+                  },
+                  {
+                    "name": "最大适用海拔: 1海拔修正，费用无变化，但需说明按多少海拔修正；2选择人工气候室模拟海拔，另一种计费原则，费用有增加 m"
+                  },
+                  {
+                    "name": "试验时间: 1min s"
+                  },
+                  {
+                    "name": "试验部位: 极对地、极间、开关断口 / 极对地、极间、开关断口"
+                  },
+                  {
+                    "name": "交流电压: 按表1（额定电压范围I）与表4（额定电压范围II）额定绝缘水平选取 kV"
+                  },
+                  {
+                    "name": "试验相数: 用户录入 / 40.5kV默认三相，363kV及以上默认单相，72.5kV~252kV单相或三相由客户录入"
+                  },
+                  {
+                    "name": "试验次数: 1"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 试验电压选择迭代规则 | if U₀ > Uᵣ then U := U - ΔU; else if U₀ < Uᵣ then U := U + ΔU"
+                  },
+                  {
+                    "name": "规则: 时间参量测试环境温度条件 | 测试时周围空气温度为20°C±5°C | temperature = 20 ± 5"
+                  },
+                  {
+                    "name": "规则: 直流试验电压容差 | 湿试验 | if test_time ≤ 60s: voltage_tolerance = ±1%; else: voltage_tolerance = ±3%"
+                  },
+                  {
+                    "name": "规则: 工频耐受电压试验适用海拔修正 | max_applicable_altitude"
+                  },
+                  {
+                    "name": "规则: 试验电压计算规则 | test_voltage = 0.8 * table1_col2_value"
+                  },
+                  {
+                    "name": "规则: 容性电流试验后重击穿触发状态检查 | 容性电流试验中发生重击穿且其峰值恢复电压低于状态检查电压试验电压 | reignition_occurred == true and peak_recovery_voltage < state_check_voltage"
+                  },
+                  {
+                    "name": "规则: NSDD不计入失败 | NSDD出现时 | NSDD_count is not counted as failure"
+                  },
+                  {
+                    "name": "规则: 接地要求 | 状态检查试验中 | unenergized_terminals shall be grounded"
+                  },
+                  {
+                    "name": "规则: 局部放电测量仪器要求 | test_item = '局部放电试验' | use GB/T7354 specified instruments"
+                  },
+                  {
+                    "name": "规则: 额定绝缘水平需根据额定电压选择或按非标要求提供 | 提供断路器技术特征时 | 额定绝缘水平应依据额定电压从标准等级中选择，或明确非标要求"
+                  },
+                  {
+                    "name": "规则: Load side voltage tolerance for dielectric test | additional dielectric test for three-pole circuit-breakers | voltage_tolerance = [-0, +3]% and decay <= 10% at 0.3s"
+                  },
+                  {
+                    "name": "规则: 工频耐受试验适用第一类程序 | 规定持续时间的交流电压试验 | 适用于第一类试验程序"
+                  },
+                  {
+                    "name": "规则: 工频耐受试验最小试验次数 | 工频耐受试验 | n_i ≥ 10"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 试验电压分配要求（操作冲击） | 操作冲击电压试验中极间绝缘试验电压分配要求被修改"
+                  },
+                  {
+                    "name": "规则: 局部放电试验前必须完成工频耐压试验 | 进行局部放电试验时 | 应在雷电冲击电压试验和工频电压试验后进行"
+                  },
+                  {
+                    "name": "规则: T100s后必须执行工频电压检查 | 完成T100s试验后 | 必须执行工频电压检查（依据7.2.12），即使此前已执行过"
+                  },
+                  {
+                    "name": "规则: 电弧分解物喷射的绝缘防护要求 | 存在电弧分解物喷射风险且影响极间绝缘距离 | use_grounding_screen_to_verify_insulation_distance"
+                  },
+                  {
+                    "name": "规则: 状态检查电压试验适用条件 | 机械或环境试验后，触头间绝缘不能通过外观验证 | mechanical_or_environment_test_done == true AND visual_inspection_insufficient == true"
+                  },
+                  {
+                    "name": "规则: 状态检查试验电压依据表8 | 金属封闭断路器状态检查 | close_rows=4, open_rows=4, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 状态检查试验电压选择规则 | 断口和对地额定绝缘电压不同 | test_voltage = max(rated_break_voltage, rated_ground_voltage)"
+                  },
+                  {
+                    "name": "规则: 容性电流测试中最小燃弧时间允许公差 | rated_voltage >= 72.5 kV | tolerance_for_min_arc_time = ±0.5 ms"
+                  },
+                  {
+                    "name": "规则: 中压断路器最小燃弧时间允许公差 | rated_voltage < 72.5 kV | tolerance_for_min_arc_time = ±1 ms"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "控制和辅助回路的绝缘试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验时间: 1min min"
+                  },
+                  {
+                    "name": "试验电压: 2 kV V"
+                  },
+                  {
+                    "name": "试验次数: 1"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 短时中断后系统行为要求 | 发生短时中断 | 无误操作、无误报警、未完成动作在电源恢复后正确完成"
+                  },
+                  {
+                    "name": "规则: 控制回路绝缘湿试验程序 | 湿试验 | test_procedure = same as dry test"
+                  },
+                  {
+                    "name": "规则: 电压互感器二次绕组处理规则 | 进行控制和辅助回路的绝缘试验时 | 电压互感器的二次绕组应开路"
+                  },
+                  {
+                    "name": "规则: 辅助和控制回路绝缘试验适用条件 | 安装在开关装置框架上的辅助和控制回路需防护主回路破坏性放电 | 通过7.2中规定的绝缘型式试验验证"
+                  },
+                  {
+                    "name": "规则: 直流电压试验替代条件 | 制造厂同意时 | test_voltage == 2.8"
+                  },
+                  {
+                    "name": "规则: 低压辅助设备海拔豁免规则 | 设备为低压辅助设备且海拔 ≤ 2000m | 无需采取额外绝缘措施"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | test_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 电流互感器二次绕组处理规则 | 进行控制和辅助回路的绝缘试验时 | 电流互感器的二次绕组应短路并与地隔离"
+                  },
+                  {
+                    "name": "规则: 删除稳态湿热试验 | 删除辅助和控制回路附加试验中的稳态湿热试验"
+                  },
+                  {
+                    "name": "规则: 限压装置处理规则 | 进行控制和辅助回路的绝缘试验时 | 限压装置（如果有）应断开"
+                  },
+                  {
+                    "name": "规则: 试验中禁止维护规则 | no maintenance, lubrication, adjustment or replacement allowed during test"
+                  },
+                  {
+                    "name": "规则: 控制和辅助回路绝缘试验适用性 | 状态检查中要求时 | as required by 7.2.12 for status check"
+                  },
+                  {
+                    "name": "规则: 辅助和控制回路测试电压依据额定供电电压 | 测试电压依据5.9规定的额定供电电压 | test_voltage = rated_supply_voltage (5.9)"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "操作冲击耐受电压试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 1"
+                  },
+                  {
+                    "name": "最大适用海拔: 1海拔修正，费用无变化，但需说明按多少海拔修正；2选择人工气候室模拟海拔，另一种计费原则，费用有增加 m"
+                  },
+                  {
+                    "name": "介质性质: 正常或充气充油"
+                  },
+                  {
+                    "name": "电压极性: 正极性或负极性"
+                  },
+                  {
+                    "name": "额定电压: 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 / 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 kV"
+                  },
+                  {
+                    "name": "试验部位: 极对地、极间、开关断口 / 极对地、极间、开关断口"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 操作冲击湿试验允许闪络 | 湿试验 | test_count = 1 (允许闪络), repeat test: failure_count = 0"
+                  },
+                  {
+                    "name": "规则: 操作冲击试验适用海拔修正 | max_applicable_altitude"
+                  },
+                  {
+                    "name": "规则: 操作冲击耐受电压试验的 TRV 参数依据表10、表18、表19 | 额定电压 126kV 及以上，kpp=1.3 或 1.5 | table_ref=表10, table_ref=表18, table_ref=表19, target_param_key=trv_parameters"
+                  },
+                  {
+                    "name": "规则: 操作冲击湿试验空气密度修正 | 湿试验 | apply air density correction per 4.3, no humidity correction"
+                  },
+                  {
+                    "name": "规则: 操作冲击电压换算 | U₀ = U / Kₜ"
+                  },
+                  {
+                    "name": "规则: 操作冲击试验适用第一类程序 | 规定持续时间的冲击电压试验 | 适用于第一类试验程序"
+                  },
+                  {
+                    "name": "规则: 操作冲击试验最小试验次数 | 操作冲击耐受电压试验 | n_i ≥ 10"
+                  },
+                  {
+                    "name": "规则: 操作冲击试验升降法适用条件 | 采用升降法进行操作冲击耐受电压试验 | min_voltage_levels = 8, max_shocks = 7"
+                  },
+                  {
+                    "name": "规则: 电压级差计算规则 | 使用升降法进行操作冲击试验 | delta_U = (0.015 to 0.03) * U50_estimated"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | test_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 极间绝缘电压分配要求 | 修改极间绝缘试验电压分配要求"
+                  },
+                  {
+                    "name": "规则: 替代方法中电压分配要求 | 极间操作冲击试验 | 主要电压 + 附加电压 = 表4栏(5)的值，且附加电压反相"
+                  },
+                  {
+                    "name": "规则: 底座可绝缘条件 | 额定电压≤72.5kV的气体绝缘金属封闭开关设备或任一额定电压的其他技术设备，且使用替代方法 | 底座可与地绝缘"
+                  },
+                  {
+                    "name": "规则: 时间参量测试环境温度条件 | 测试时周围空气温度为20°C±5°C | temperature = 20 ± 5"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "雷电冲击耐受电压试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 是工频相应次数×30次"
+                  },
+                  {
+                    "name": "雷电冲击干耐受电压: 按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取 V"
+                  },
+                  {
+                    "name": "最大适用海拔: 可选项，一般≥2000m需关注。两种选择：1海拔修正，费用无变化，但需说明按多少海拔修正；2选择人工气候室模拟海拔，另一种计费原则，费用有增加 m"
+                  },
+                  {
+                    "name": "试验部位: 极对地、极间、开关断口 / 极对地、极间、开关断口"
+                  },
+                  {
+                    "name": "介质性质: 正常或充气充油"
+                  },
+                  {
+                    "name": "额定电压: 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 / 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 kV"
+                  },
+                  {
+                    "name": "试验相数: 用户录入 / 40.5kV默认三相，363kV及以上默认单相，72.5kV~252kV单相或三相由客户录入"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 第一类试验表格数据引用 | 第一类试验 | 图A.1中每级电压施加10次，共8级，总试验次数80次"
+                  },
+                  {
+                    "name": "规则: 雷电冲击耐受电压施加条件 | 断路器处于合闸位置 | breaker_position == 'closed'"
+                  },
+                  {
+                    "name": "规则: 雷电冲击耐受电压计算规则 | 分闸状态试验 | test_voltage = lightning_impulse_withstand_voltage + power_frequency_peak_voltage"
+                  },
+                  {
+                    "name": "规则: 雷电冲击波形参数计算流程 | 使用双指数拟合u_d(t) = U[exp(-(t-td)/τ₁) - exp(-(t-td)/τ₂)]计算基准曲线"
+                  },
+                  {
+                    "name": "规则: 雷电冲击试验依据表 | 施加电压依据表4栏(8) | table_ref='GB/T11022—2020 表4 栏(8)'"
+                  },
+                  {
+                    "name": "规则: 试验电压曲线重建 | Uᵣ(t) = Uₘ(t) + R_f(t)"
+                  },
+                  {
+                    "name": "规则: 第二类试验确定10%/90%放电电压 | 第二类试验 | n=7时，10%放电电压为耐受电压，90%放电电压为破坏性电压"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 冲击发生器接地端子连接规则 | 进行雷电冲击电压试验时 | 冲击发生器的接地端子应与金属封闭开关设备和控制设备的外壳相连"
+                  },
+                  {
+                    "name": "规则: 第二类试验默认组次数 | 第二类试验 | n = 7"
+                  },
+                  {
+                    "name": "规则: 截断波形时间差校正 | 波尾截断冲击波形 | t_L = 时间差，通过30%、50%、80%电压点交叉法求取"
+                  },
+                  {
+                    "name": "规则: 雷电冲击试验适用海拔修正 | max_applicable_altitude"
+                  },
+                  {
+                    "name": "规则: 海拔修正规则 | 海拔 > 1000m | 雷电冲击耐受电压按GB/T311.1—2012附录B修正"
+                  },
+                  {
+                    "name": "规则: 对称布置下省略试验条件 | 每极接线端子的布置相对于底座是对称的 | 试验条件4、5、6可省略"
+                  },
+                  {
+                    "name": "规则: 底座可绝缘条件 | 额定电压≤72.5kV的气体绝缘金属封闭开关设备或任一额定电压的其他技术设备，且使用替代方法 | 底座可与地绝缘"
+                  },
+                  {
+                    "name": "规则: 雷电冲击耐受电压施加条件 | 断路器处于分闸位置 | breaker_position == 'open'"
+                  },
+                  {
+                    "name": "规则: 相对过冲幅值计算 | β′ = 100×(Uₑ - Uₙ)/U꜀%"
+                  },
+                  {
+                    "name": "规则: 基准水平偏置去除 | U₀(t) = U(t) - 平均基准水平"
+                  },
+                  {
+                    "name": "规则: 30%/50%/90% Uₜ用于时间参数确定 | 时间参数基于30%、50%、90% Uₜ确定"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 时间参量测试环境温度条件 | 测试时周围空气温度为20°C±5°C | temperature = 20 ± 5"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "局部放电试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "预加时间: 1 min s"
+                  },
+                  {
+                    "name": "局部放电值: 40.5kV以上为5 pC；40.5kV及以下为10 pC pC"
+                  },
+                  {
+                    "name": "试验次数: 与工频耐受电压试验的相间及对地次数一致"
+                  },
+                  {
+                    "name": "介质性质: 充气"
+                  },
+                  {
+                    "name": "预加电压: 工频耐受电压值 kV"
+                  },
+                  {
+                    "name": "试验相数: 40.5kV及以下默认三相；363kV及以上默认单相；72.5kV~252kV可单相或三相"
+                  },
+                  {
+                    "name": "交流电压: T3906—2020；70.5kV及以上按GB1984-2024表7并按断路器结构确定 kV"
+                  },
+                  {
+                    "name": "额定电压: 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 / 额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。 kV"
+                  },
+                  {
+                    "name": "测量时间(min): T3906-2020附录F.4；40.5kV以上按GB1984-2024 7.2.10表7，且大于1 min min"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 局部放电试验电压等级分界 | 额定电压 <= 40.5 kV | rated_voltage <= 40.5"
+                  },
+                  {
+                    "name": "规则: 局部放电试验放电量限值可协商规则 | 尚未取得可靠数据 | 局部放电量限值可由制造厂与用户协商确定"
+                  },
+                  {
+                    "name": "规则: 局部放电试验电压等级规则 | 试验为程序A | 试验电压 = 1.1 × rated_voltage"
+                  },
+                  {
+                    "name": "规则: 局部放电试验适用设备 | GIS断路器和外壳不带电断路器 | equipment_type == 'GIS' OR enclosure_energized == false"
+                  },
+                  {
+                    "name": "规则: 局部放电试验充流体设备压力条件规则 | 设备为充流体设备 | 试验应在最低功能压力或额定充入压力中更严酷者下进行"
+                  },
+                  {
+                    "name": "规则: 试验回路标准 | 局部放电测量 | complies_with_GB/T7354"
+                  },
+                  {
+                    "name": "规则: 局部放电试验频率规则 | 现场试验电压互感器连接 | 试验频率应足够高以防止铁心饱和"
+                  },
+                  {
+                    "name": "规则: 局部放电试验表7行数 | 表7中试验电压配置 | close_rows=2, open_rows=2, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 局部放电试验适用性规则 | 设备为金属封闭开关设备和控制设备 | 局部放电试验为型式试验的必要项目"
+                  },
+                  {
+                    "name": "规则: 局部放电湿试验介质 | 湿试验 | dielectric_medium = water"
+                  },
+                  {
+                    "name": "规则: 局部放电试验电压计算规则 | 多箱型或共箱型GIS断路器 | test_voltage = (kPP=1.3 ? 1.2 * Ur/√3 : 1.2 * Ur)"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 局部放电试验补充测量条件规则 | 隔离开关处于分闸位置 | 应补充进行局部放电测量"
+                  },
+                  {
+                    "name": "规则: 局部放电试验电压等级分界 | 额定电压 >= 72.5 kV | rated_voltage >= 72.5"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统中的交流开关设备和控制设备。\n\n除非在有关的产品标准中对特定类型开关设..."
+                  },
+                  {
+                    "name": "# 1 范围\n\n本标准定义了局部放电的术语和有关的被测参量，规定了使用的试验回路、测量回路、通用的模拟及数字测量方法，并给出了校准方法及对校准仪器的要求、试验程序、区分局部放电和外界干扰的准则。\n\n本标准适用于电气设备、组件或系统在频率为 $400\\mathrm{Hz}$ 及以下的交流电压试验或直流电压试验时产生的局部..."
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "尘、烟雾、腐蚀和/或可燃气体、蒸汽或者盐导致与空气质量相关的污秽是正常和特殊使用条件下需要考虑的因素(见第4章)。本附录确定了污秽等级以及外绝缘最小标称统一爬电比距的推荐值。\n\n# A.2 污秽等级\n\n为了标准化的目的，从很轻到很重定性地定义了5个污秽等级：a,b,c,d,e。表A.1中给出了定性示例，近似地描述了某些..."
+                  },
+                  {
+                    "name": "任何情况下，瞬时工频电压， $50\\mathrm{Hz}$ 时降低了 $6\\%$ 以上， $60\\mathrm{Hz}$ 时降低了 $10\\%$ 以上。因此，当使用确定包括工频恢复电压的预期TRV的方法时，或用回路常数进行计算时，还应考虑这些影响。\n\n电流过零后工频分量的瞬时值也与短路功率因数和电流最后半波的直流分量百..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "型式试验期间，可以区别下述类型的容差：\n\n直接决定试品应力的试验参量的容差；\n\n——关于试验前后试品性能或特征的容差；\n\n——试验条件的容差；\n\n——使用的测量装置的参数容差。\n\n容差定义为标准中规定的试验数值的范围，且测到的试验数值应在该范围内试验方为有效。在某些情况下，即使测到的数值落在了该范围之外（此时导致了更严..."
+                  },
+                  {
+                    "name": "100(+455) | \n\n 1 100 | 1 100 | 1 100(+635) | 1 675 | 2 700 | 1 550(+900) | 2 250 | 2 250(+630) | \n\n 1 800 | 2 900 | 1 675(+900) | 2 400 | 2 400(+630) | \n\n 注1:栏(..."
+                  },
+                  {
+                    "name": "（自动重合闸过程中的)无流时间 dead time (during auto-reclosing)\n\n从分闸操作中所有极中电弧最终熄灭时刻起到随后的合闸操作中第一极中开始流过电流时刻为止的时间间隔。"
+                  },
+                  {
+                    "name": "100029）\n\n北京市西城区三里河北街16号（100045）\n\n网址：www.spc.net.cn\n\n服务热线：400-168-0010\n\n2024年9月第一版\n\n￥\n\n书号：155066·1-77317\n\n版权专有 侵权必究"
+                  },
+                  {
+                    "name": "# 中华人民共和国国家标准\n\nGB/T 16927.1—2011\n\n代替 GB/T 16927.1—1997\n\n# 高电压试验技术\n\n# 第1部分：一般定义及试验要求\n\n# High-voltage test techniques—Part 1: General definitions and test require..."
+                  },
+                  {
+                    "name": "中华人民共和国\n\n国家标准\n\n高压交流开关设备和控制设备标准的\n\n共用技术要求\n\nGB/T11022—2020"
+                  },
+                  {
+                    "name": "电弧故障电流 are fault eurrent\n\n在内部电弧情况下开美设备和控制设备设计的、与人员保护相关的三相以及单相对地（适用时的）内部电弧故障电流的有效值。"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "温升性能型式试验",
+        "children": [
+          {
+            "name": "辅助和控制回路温升试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 默认为1次"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 辅助触头温升限值依据表14 | 辅助触头的额定连续电流试验 | temperature_rise <= table14_limit"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 加热器不工作2小时后仍能分闸 | 装有加热器的断路器，加热器在最短2h内不工作时，仍能在最低周围空气温度下分闸 | heater_off_duration >= 2h AND can_op_at_min_temp = true"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "连续电流试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验相数: 用户输入三相共箱或分箱情况决定，分箱单相，共箱3相 / 40.5kV及以下默认为三相,363kV及以上默认按照单相，72.5kV~252kV根据客户输入三相共箱或分箱情况决定，分箱单相，共箱3相"
+                  },
+                  {
+                    "name": "试验次数: 1次"
+                  },
+                  {
+                    "name": "试验部位: 主回路"
+                  },
+                  {
+                    "name": "试验电流A: 用户录入额定参数中的额定电流 / 用户录入额定参数中的额定电流 A"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 镀银触头定义 | 触头经过短路试验后 | contact is considered 'silver-plated' only if silver layer remains"
+                  },
+                  {
+                    "name": "规则: 温升稳定判定 | 如果在1小时内温升增加≤1K，则认为达到稳定；或试验时间≥5×热时间常数"
+                  },
+                  {
+                    "name": "规则: 温升试验环境温度范围 | 试验应在GB/T11022—2020第4章规定的最低和最高空气温度范围内进行 | temperature_range = min_max_air_temp (GB/T11022-2020 4)"
+                  },
+                  {
+                    "name": "规则: 温升试验相数规则 | 进行温升试验时 | 应在额定的相数下通以额定电流"
+                  },
+                  {
+                    "name": "规则: 温升判据基于表14 | table_ref=表14; target_param_key=temperature_rise_limit"
+                  },
+                  {
+                    "name": "规则: 操作循环分段维护规则 | 每2000次操作循环后 | maintenance allowed: lubrication and mechanical adjustment (non-main-circuit parts only)"
+                  },
+                  {
+                    "name": "规则: 表14温升限值更新 | 表14中部件1、2、4的温升/温度限值被修改，新增可触及表面类别及其限值"
+                  },
+                  {
+                    "name": "规则: 触头镀层状态影响分类 | 触头镀层在试验后不连续 | if (coating_discontinuous) then classify_as_bare"
+                  },
+                  {
+                    "name": "规则: 辅助回路通电规则 | 仅在开合操作时通电的辅助回路 | 若具自动开断装置：通电10次×1s或至动作，间隔10s；若无自动开断装置：一次通电15s"
+                  },
+                  {
+                    "name": "规则: 温升基准温度规则 | 测量各元件温升时 | 应以外壳外面的周围空气温度作为基准值进行折算"
+                  },
+                  {
+                    "name": "规则: 温升试验电流流向规则 | 进行温升试验时 | 额定电流从母线端流向用于电缆连接的末端"
+                  },
+                  {
+                    "name": "规则: 连续电流试验适用条件 | 主回路 | 试验应在额定连续电流下进行，频率为额定频率，谐波≤5%，周围空气温度10°C~40°C，三相设备默认三相试验，40.5kV以上非封闭设备可单极，额定电流≤1250A可串联"
+                  },
+                  {
+                    "name": "规则: 密封终身断路器不执行连续电流试验 | 密封终身断路器 | 连续电流试验不适用，使用接触电阻测量代替"
+                  },
+                  {
+                    "name": "规则: 气体介质替换：OG替代空气，NOG替代SF6 | OG代替空气，NOG代替SF6"
+                  },
+                  {
+                    "name": "规则: 临时连接温升超差仍可接受条件 | 距离主回路端子1m处临时连接线温升超过端子温升5K以上 | if (temp_rise_connection - temp_rise_terminal > 5K) then test_valid = true if all criteria in 7.5.5 are met"
+                  },
+                  {
+                    "name": "规则: 多材料绝缘温升取最低限值 | 线圈绝缘由多种绝缘材料组成 | temperature_rise_limit = min(所有组成材料的温升限值)"
+                  },
+                  {
+                    "name": "规则: 电阻增加20%判据 | 其他试验后状态检查 | 若电阻增加≤20%，则合格；若>20%，则必须执行连续电流试验(7.5)"
+                  },
+                  {
+                    "name": "规则: 空气温度测量要求 | 周围空气温度测量 | 使用至少3个温度计，均匀布置于试品周围、距试品约1m、高度与载流部件平均高度一致"
+                  },
+                  {
+                    "name": "规则: 连续电流试验替代温升试验 | 合并原温升试验内容"
+                  },
+                  {
+                    "name": "规则: 密封试验环境温度范围 | 密封试验时标准周围空气温度值及可接受范围已给出"
+                  },
+                  {
+                    "name": "规则: 环境温度不稳定时的替代基准规则 | 周围空气温度不稳定 | 可在相同的环境条件下，取一个相同的外壳的表面温度作为试验时的环境温度"
+                  },
+                  {
+                    "name": "规则: 操作前/后合分操作次数 | M1/M2级断路器 | 5 operations at rated, min, max voltage/pressure"
+                  },
+                  {
+                    "name": "规则: 其他主要功能元件电流模拟规则 | 外壳内安装有其他主要功能元件 | 它们应承载电流，且该电流产生的功率损耗与额定条件相对应"
+                  },
+                  {
+                    "name": "规则: 温度范围适用规则 | 环境温度超出-25°C至40°C | 应按4.2.4中定义的气候等级（如严寒、酷热等）调整试验条件"
+                  },
+                  {
+                    "name": "规则: 三极串联试验适用额定电流 | 允许三极串联后进行试验"
+                  },
+                  {
+                    "name": "规则: 频率覆盖规则 | 额定频率为50Hz或60Hz且无铁磁元件 | 在50Hz下试验且温升≤最大允许值的95%，则覆盖60Hz；在60Hz下试验则覆盖50Hz"
+                  },
+                  {
+                    "name": "规则: 温升修正限制 | 周围空气温度在10°C~40°C范围内 | 不进行温升值修正"
+                  },
+                  {
+                    "name": "规则: 相邻单元电流模拟规则 | 对单个功能单元进行试验时 | 其相邻的单元应通以电流，该电流所产生的功率损耗应与额定情况下相同"
+                  },
+                  {
+                    "name": "规则: M2级操作循环总数 | total_operations = 5 * table9_series_count = 10000"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "的试验涵盖了较大的布置（即三极或多单元），这种情况通常为非封闭的开关设备和控制设备。这一规定适用于某些户外输电装置。\n\n如7.5.3.1中的规定：\n\n——对于额定频率为 $50\\mathrm{Hz}$ 和 $60\\mathrm{Hz}$ 且载流部件附近没有铁磁元件的开关设备和控制设备，只要在 $50\\mathrm{Hz..."
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "前后回路电阻测量试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "回路电阻: 客户选择输入具体值或实测 / 客户输入或实测 μΩ"
+                  },
+                  {
+                    "name": "试验次数: 2"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 电阻测量重复条件 | 电阻增加超过100% | if delta_resistance > 100% then allow up to 10 no-load CO cycles then re-measure"
+                  },
+                  {
+                    "name": "规则: 接地端子电压降要求 | 正常运行期间可能触及并接地的所有导电部件和外壳 | 通以30A(DC)电流时，电压降不超过3V"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 密封终身断路器必须执行回路电阻测量 | 密封终身断路器 | 必须依据7.102.9.4执行接触电阻测量以验证额定连续电流能力"
+                  },
+                  {
+                    "name": "规则: 电阻重复测量后冷却时间 | 电阻增加仍超过100%时 | after applying rated continuous current for max 15 min, allow max 30 min cooling before re-measure"
+                  },
+                  {
+                    "name": "规则: 电阻测量后需进行连续电流试验 | 电阻增加仍超过100%时 | if delta_resistance > 100% after all re-measures then perform continuous current test (7.5)"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "开合性能型式试验",
+        "children": [
+          {
+            "name": "容性电流开断试验(CC1)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电流A: 用户录入额定电缆充电开断电流(Ic)的10%~40%；未录入按表1优选值Ic的10%~40%。表1优选值：I1(3.6 / 用户录入额定电缆充电开断电流(Ic)的10%~40%；未录入按表1优选值Ic的10%~40%。表1优选值：I1(3.6"
+                  },
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3 kV"
+                  },
+                  {
+                    "name": "试验相数: 40.5及以下固定3相，72.5~126kV客户选择单相或三相，252及以上固定单相"
+                  },
+                  {
+                    "name": "操作顺序: C1级单相"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  },
+                  {
+                    "name": "额定电压: 用户录入额定电压推荐标准推荐(Ic)的额定电缆充电开断电流 / 根据用户录入额定电压推荐标准推荐(Ic)的额定电缆充电开断电流"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 单相CC1试验方式操作分布规则 | 试验方式为CC1且为单相 | {\"close_rows\": 0, \"open_rows\": 12, \"open_short_arc_rows\": 6, \"open_other_rows\": 12, \"open_short_arc_other_rows\": 6}"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（三相） | 燃弧时间无法精确控制 | test_count <= 36"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: CC1与CC2测试中允许一次重击穿并要求重做 | restrike_occurred == true | retest_required = true"
+                  },
+                  {
+                    "name": "规则: 容性回路电容比例要求 | 三相试验，额定电压72.5kV以上 | positive_sequence_capacitance = 2 * zero_sequence_capacitance"
+                  },
+                  {
+                    "name": "规则: 容性回路电容比例要求 | 三相试验，额定电压72.5kV及以下 | positive_sequence_capacitance = 3 * zero_sequence_capacitance"
+                  },
+                  {
+                    "name": "规则: 回路电阻限制 | 使用电容器模拟线路或电缆 | series_resistance <= 0.05 * capacitive_reactance"
+                  },
+                  {
+                    "name": "规则: 关合涌流频率 | 背对背电容器组关合试验 | making_inrush_frequency = 4250 Hz"
+                  },
+                  {
+                    "name": "规则: 关合涌流阻尼系数 | 背对背电容器组关合试验，额定电压72.5kV及以下 | damping_ratio >= 0.75"
+                  },
+                  {
+                    "name": "规则: 关合涌流阻尼系数 | 背对背电容器组关合试验，额定电压72.5kV以上 | damping_ratio >= 0.85"
+                  },
+                  {
+                    "name": "规则: 恢复电压值来源 | 容性电流开断试验 | table_ref=表28, open_rows=2, close_rows=0, fracture_rows=0, target_param_key=test_voltage"
+                  },
+                  {
+                    "name": "规则: 三相CC1试验方式操作分布规则 | 试验方式为CC1且为三相 | {\"close_rows\": 0, \"open_rows\": 6, \"open_short_arc_rows\": 3, \"open_other_rows\": 6, \"open_short_arc_other_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（单相） | 燃弧时间无法精确控制 | test_count <= 72"
+                  },
+                  {
+                    "name": "规则: 最短燃弧时间必须在同一极获得 | 试验方式为CC1或CC2 | all_short_arc_times_must_be_on_same_pole"
+                  },
+                  {
+                    "name": "规则: C2级试验前必须完成T60预备试验 | 试验等级为C2 | T60 must precede CC1"
+                  },
+                  {
+                    "name": "规则: 端子接线倒换规则（不对称断路器） | 断路器电流路径不对称 | terminal_connection_must_be_swapped_between_CC1_and_CC2"
+                  },
+                  {
+                    "name": "规则: 气体回收与再充要求 | 端子接线倒换导致气体压力降低 | recharge_at_least_50_percent_used_gas"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC1)重击穿次数判定规则 | 试验方式为CC1或CC2 | total_restrikes <= 2"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC1)重复试验逻辑 | 在试验方式1或2中出现1次重击穿 | repeat_both_sequences"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC1)在C1级重新划分中的适用次数 | 三相试验 | test_count == 48"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC1)在C1级重新划分中的适用次数 | 单相试验 | test_count == 96"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 3.6 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 7.2 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 12 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 24 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 40.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 72.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 126 | I1 = 31.5 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 252 | I1 = 125 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 363 | I1 = 315 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压依据表D.1、D.2、D.3 | 容性电流开断 | table_ref=D.1,D.2,D.3"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "容性电流开断试验(LC1)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3 kV"
+                  },
+                  {
+                    "name": "试验电流A: 用户录入额定线路充电开断电流(I1)的10%~40%；未录入按表1优选值I1的10%~40%。表1优选值：I1(3.6 / 用户录入额定线路充电开断电流(I1)的10%~40%；未录入按表1优选值I1的10%~40%。表1优选值：I1(3.6 kA"
+                  },
+                  {
+                    "name": "操作顺序: O"
+                  },
+                  {
+                    "name": "额定电压: 用户录入（试验电压基础） / 用户录入（试验电压基础） kV"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 40.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 800 | I1 = 900 A"
+                  },
+                  {
+                    "name": "规则: 容性开断试验操作顺序 | 采用J.4规定的试验方式 | 6CO分布在极性1（30°步长），6CO分布在极性2（30°步长）"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 252 | Ic = 250 A"
+                  },
+                  {
+                    "name": "规则: 额定背对背电容器组关合涌流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Ibi = 20 kA"
+                  },
+                  {
+                    "name": "规则: 三相容性电流开断试验电压计算规则 | 三相试验 | table_ref=表D.1"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 550 | I1 = 500 A"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 24 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 12 | Ic = 25 A"
+                  },
+                  {
+                    "name": "规则: 容性开断试验电流计算规则 | 单相或两相接地故障 | 试验电流 = 1.25 × 额定容性开断电流（有效接地）或 1.7 × 额定容性开断电流（非有效接地）"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 363 | Ic = 355 A"
+                  },
+                  {
+                    "name": "规则: 额定单个电容器组开断电流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Isb = 400 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 3.6 | Ic = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 7.2 | Ic = 10 A"
+                  },
+                  {
+                    "name": "规则: 单次开断操作满足验证要求 | 验证绝缘性能附加试验 | test_count=1"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 12 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压计算规则 | 单相试验 | table_ref=表D.2"
+                  },
+                  {
+                    "name": "规则: 试验电压依据介质性质选择 | if dielectric_medium='中性点有效接地系统' then use D.2 values else use D.1 values"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 24 | Ic = 31.5 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 40.5 | Ic = 50 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验（接地故障）适用条件 | 用户要求验证单相或两相接地故障下的容性电流开断 | 采用C1级试验程序，试验电压为U_r/√3 × k_c，试验电流为1.25倍或1.7倍额定容性电流"
+                  },
+                  {
+                    "name": "规则: 容性开断试验电压计算规则 | 单相或两相接地故障 | 试验电压 = U_r / √3 × k_c，其中k_c=1.4（有效接地）或1.7（非有效接地）"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 126 | I1 = 31.5 A"
+                  },
+                  {
+                    "name": "规则: 容性电流试验适用性 | 断路器规定有额定线路充电开断电流、电缆充电开断电流、单个电容器组开断电流、背对背电容器组开断电流和关合涌流 | 必须进行容性电流开合试验"
+                  },
+                  {
+                    "name": "规则: 50Hz与60Hz试验覆盖关系 | 60Hz试验中恢复电压在8.3ms内不低于60Hz电压值 | 50Hz试验可覆盖60Hz试验"
+                  },
+                  {
+                    "name": "规则: 电源回路TRV限值 | 线路充电、电缆充电或单个电容器组电流试验 | 预期TRV不应比T100s更严酷"
+                  },
+                  {
+                    "name": "规则: 背对背电容器组关合涌流条件 | 100%额定背对背电容器组开断电流试验 | 电源回路电容与阻抗应使关合涌流达到额定值"
+                  },
+                  {
+                    "name": "规则: 电源侧TRV不超过T100s | 背对背电容器组试验 | 电源侧预期TRV不得超过T100s规定值"
+                  },
+                  {
+                    "name": "规则: 试验回路频率容差 | 试验频率 = 额定频率 ± 2%"
+                  },
+                  {
+                    "name": "规则: 开断时工频电压变化限值 | 试验方式1（LC1、CC1、BC1） | 电压变化 < 2%"
+                  },
+                  {
+                    "name": "规则: 开断时工频电压变化限值（方式2） | 试验方式2（LC2、CC2、BC2） | 电压变化 < 5%"
+                  },
+                  {
+                    "name": "规则: 电源回路接地要求（电容器组） | 电容器组关合和开断试验 | 电源回路中性点应接地，零序阻抗 ≤ 3×正序阻抗（有效接地）"
+                  },
+                  {
+                    "name": "规则: 电源回路接地要求（非有效接地） | 用于中性点非有效接地系统的三相试验 | 电源侧中性点应绝缘"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 72.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 252 | I1 = 125 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 363 | I1 = 315 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 1100 | I1 = 1200 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 72.5 | Ic = 125 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 126 | Ic = 140 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 550 | Ic = 500 A"
+                  },
+                  {
+                    "name": "规则: 额定背对背电容器组开断电流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Ibb = 400 A"
+                  },
+                  {
+                    "name": "规则: 关合涌流频率默认值 | 4250 Hz"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "left( {{252}\\mathrm{{kV}},{50}\\mathrm{{kA}},{50}\\mathrm{\\;{Hz}}\\text{时的}{L}_{90}\\text{、}{L}_{75}}\\right)$"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "容性电流开断试验(LC2)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电流A: 用户录入额定电缆充电开断电流(Ic)；未录入按表1优选值Ic。表1优选值：I1(3.6 / 用户录入额定电缆充电开断电流(Ic)；未录入按表1优选值Ic。表1优选值：I1(3.6 kA"
+                  },
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3 kV"
+                  },
+                  {
+                    "name": "操作顺序: C1级单相"
+                  },
+                  {
+                    "name": "试验相数: 40.5及以下固定3相，72.5~126kV客户选择单相或三相，252及以上固定单相"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（单相） | 燃弧时间无法精确控制 | test_count <= 72"
+                  },
+                  {
+                    "name": "规则: 额定背对背电容器组开断电流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Ibb = 400 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 72.5 | Ic = 125 A"
+                  },
+                  {
+                    "name": "规则: 三相LC2试验方式操作分布规则 | 试验方式为LC2且为三相 | {\"close_rows\": 6, \"open_rows\": 3, \"close_short_arc_rows\": 6, \"open_short_arc_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 7.2 | Ic = 10 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验LC2适用条件 | 用户要求验证单相或两相接地故障下的容性电流开断 | 采用C1级试验程序，试验电压为U_r/√3 × k_c，试验电流为1.25倍或1.7倍额定容性电流"
+                  },
+                  {
+                    "name": "规则: 最短燃弧时间必须在同一极获得 | 试验方式为LC1或LC2 | all_short_arc_times_must_be_on_same_pole"
+                  },
+                  {
+                    "name": "规则: 中性点绝缘条件 | 中性点非有效接地系统 | neutral_point_grounding = false"
+                  },
+                  {
+                    "name": "规则: 关合涌流频率默认值 | 4250 Hz"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 800 | I1 = 900 A"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（三相） | 燃弧时间无法精确控制 | test_count <= 36"
+                  },
+                  {
+                    "name": "规则: T10试验替代其他端子故障试验 | 进行了T10试验 | 无需重复T30、T60、T100a、T100s"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 7.2 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(LC2)重复试验逻辑 | 在试验方式1或2中出现1次重击穿 | repeat_both_sequences"
+                  },
+                  {
+                    "name": "规则: 容性开断试验操作顺序 | 采用J.4规定的试验方式 | 6CO分布在极性1（30°步长），6CO分布在极性2（30°步长）"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(LC2)在C1级重新划分中的适用次数 | 单相试验 | test_count == 96"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(LC2)在C1级重新划分中的适用次数 | 三相试验 | test_count == 48"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压依据表D.1、D.2、D.3 | 容性电流开断 | table_ref=D.1,D.2,D.3"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 40.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: TRV恢复电压计算 | 具有规定恢复电压的试验 | expected_recovery_voltage = test_voltage_from_single_phase * scaling_factor"
+                  },
+                  {
+                    "name": "规则: 中性点接地条件 | 中性点有效接地系统 | neutral_point_grounding = true, zero_sequence_impedance <= 3 * positive_sequence_impedance"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 363 | I1 = 315 A"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(LC2)重击穿次数判定规则 | 试验方式为LC1或LC2 | total_restrikes <= 2"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 24 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 126 | I1 = 31.5 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 1100 | I1 = 1200 A"
+                  },
+                  {
+                    "name": "规则: 恢复电压值来源 | 容性电流开断试验 | table_ref=表28, open_rows=2, close_rows=0, fracture_rows=0, target_param_key=test_voltage"
+                  },
+                  {
+                    "name": "规则: 端子接线倒换规则（不对称断路器） | 断路器电流路径不对称 | terminal_connection_must_be_swapped_between_LC1_and_LC2"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 363 | Ic = 355 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 126 | Ic = 140 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 72.5 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定单个电容器组开断电流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Isb = 400 A"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 关合涌流阻尼系数 | 背对背电容器组关合试验，额定电压72.5kV以上 | damping_ratio >= 0.85"
+                  },
+                  {
+                    "name": "规则: 气体回收与再充要求 | 端子接线倒换导致气体压力降低 | recharge_at_least_50_percent_used_gas"
+                  },
+                  {
+                    "name": "规则: 关合涌流阻尼系数 | 背对背电容器组关合试验，额定电压72.5kV及以下 | damping_ratio >= 0.75"
+                  },
+                  {
+                    "name": "规则: 单相LC2试验方式操作分布规则 | 试验方式为LC2且为单相 | {\"close_rows\": 6, \"open_rows\": 6, \"close_short_arc_rows\": 3, \"open_short_arc_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 容性开断试验电压计算规则 | 单相或两相接地故障 | 试验电压 = U_r / √3 × k_c，其中k_c=1.4（有效接地）或1.7（非有效接地）"
+                  },
+                  {
+                    "name": "规则: 容性开断试验电流计算规则 | 单相或两相接地故障 | 试验电流 = 1.25 × 额定容性开断电流（有效接地）或 1.7 × 额定容性开断电流（非有效接地）"
+                  },
+                  {
+                    "name": "规则: C2级试验前必须完成T60预备试验 | 试验等级为C2 | T60 must precede LC2"
+                  },
+                  {
+                    "name": "规则: 电流波形要求 | 开断试验 | current_rms / fundamental_current_rms <= 1.2"
+                  },
+                  {
+                    "name": "规则: 电流过零要求 | 开断试验 | zero_crossings_per_half_cycle <= 1"
+                  },
+                  {
+                    "name": "规则: 电压衰减要求 | 除LC1和CC1外的容性回路试验 | voltage_decay_at_300ms <= 10%"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 3.6 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 12 | I1 = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 252 | I1 = 125 A"
+                  },
+                  {
+                    "name": "规则: 额定线路充电开断电流优选值表 | rated_voltage == 550 | I1 = 500 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 3.6 | Ic = 10 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 12 | Ic = 25 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 24 | Ic = 31.5 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 40.5 | Ic = 50 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 252 | Ic = 250 A"
+                  },
+                  {
+                    "name": "规则: 额定电缆充电开断电流优选值表 | rated_voltage == 550 | Ic = 500 A"
+                  },
+                  {
+                    "name": "规则: 额定背对背电容器组关合涌流优选值表 | rated_voltage >= 3.6 and rated_voltage <= 550 | Ibi = 20 kA"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "left( {{252}\\mathrm{{kV}},{50}\\mathrm{{kA}},{50}\\mathrm{\\;{Hz}}\\text{时的}{L}_{90}\\text{、}{L}_{75}}\\right)$"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "容性电流开断试验(CC2)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3"
+                  },
+                  {
+                    "name": "试验电流A: 用户录入额定电缆充电开断电流(Ic)；未录入按表1优选值Ic。表1优选值：I1(3.6 / 用户录入额定电缆充电开断电流(Ic)；未录入按表1优选值Ic。表1优选值：I1(3.6"
+                  },
+                  {
+                    "name": "操作顺序: C1级单相"
+                  },
+                  {
+                    "name": "试验相数: 40.5及以下固定3相，72.5~126kV客户选择单相或三相，252及以上固定单相"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  },
+                  {
+                    "name": "额定电压: 用户录入（试验电压基础） / 用户录入（试验电压基础）"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 单相CC2试验方式操作分布规则 | 试验方式为CC2且为单相 | {\"close_rows\": 6, \"open_rows\": 6, \"close_short_arc_rows\": 3, \"open_short_arc_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC2)重复试验逻辑 | 在试验方式1或2中出现1次重击穿 | repeat_both_sequences"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 气体回收与再充要求 | 端子接线倒换导致气体压力降低 | recharge_at_least_50_percent_used_gas"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（三相） | 燃弧时间无法精确控制 | test_count <= 36"
+                  },
+                  {
+                    "name": "规则: 端子接线倒换规则（不对称断路器） | 断路器电流路径不对称 | terminal_connection_must_be_swapped_between_CC1_and_CC2"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC2)在C1级重新划分中的适用次数 | 三相试验 | test_count == 48"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 三相CC2试验方式操作分布规则 | 试验方式为CC2且为三相 | {\"close_rows\": 6, \"open_rows\": 3, \"close_short_arc_rows\": 6, \"open_short_arc_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC2)在C1级重新划分中的适用次数 | 单相试验 | test_count == 96"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC2)总次数上限（燃弧时间不可控） | 由于断路器特性妨碍燃弧时间精确控制 | test_count <= 72"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(CC2)重击穿次数判定规则 | 试验方式为CC1或CC2 | total_restrikes <= 2"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  },
+                  {
+                    "name": "规则: 最短燃弧时间必须在同一极获得 | 试验方式为CC1或CC2 | all_short_arc_times_must_be_on_same_pole"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压依据表D.1、D.2、D.3 | 容性电流开断 | table_ref=D.1,D.2,D.3"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（单相） | 燃弧时间无法精确控制 | test_count <= 72"
+                  },
+                  {
+                    "name": "规则: C2级试验前必须完成T60预备试验 | 试验等级为C2 | T60 must precede CC2"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "容性电流开断试验(BC1)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3"
+                  },
+                  {
+                    "name": "试验相数: 40.5及以下固定3相，72.5~126kV客户选择单相或三相，252及以上固定单相"
+                  },
+                  {
+                    "name": "试验类别: 背对背电容器组开合试验或单个电容器组开合试验"
+                  },
+                  {
+                    "name": "关合涌流的频率: Ibi=20kA对应4250Hz（背对背工况）"
+                  },
+                  {
+                    "name": "试验电流A: 用户录入额定背对背电容器组开断电流(Ibb)的10%~40%；未录入按表1优选值Ibb的10%~40%。表1优选值：I1(3.6 / 用户录入额定背对背电容器组开断电流(Ibb)的10%~40%；未录入按表1优选值Ibb的10%~40%。表1优选值：I1(3.6"
+                  },
+                  {
+                    "name": "额定电压: 用户录入（试验电压基础） / 用户录入（试验电压基础）"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  },
+                  {
+                    "name": "操作顺序: 单相48次O"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 端子接线倒换规则（不对称断路器） | 断路器电流路径不对称 | terminal_connection_must_be_swapped_between_BC1_and_BC2"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)操作分布规则 | 试验方式1(BC1) | close_rows=0; open_rows=24; open_distributed_by_polarity=2; open_step_15deg=8; open_min_arc_time=12"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)总次数上限（燃弧时间不可控） | 由于断路器特性妨碍燃弧时间精确控制 | test_count <= 36"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)重击穿次数判定规则 | 试验方式为BC1或BC2 | total_restrikes <= 5"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压依据表D.1、D.2、D.3 | 容性电流开断 | table_ref=D.1,D.2,D.3"
+                  },
+                  {
+                    "name": "规则: C2级试验前必须完成T60预备试验 | 试验等级为C2 | T60 must precede BC1"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)在C1级重新划分中的适用次数 | 单相试验 | test_count == 168"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（单相） | 燃弧时间无法精确控制 | test_count <= 72"
+                  },
+                  {
+                    "name": "规则: 最短燃弧时间必须在同一极获得 | 试验方式为BC1或BC2 | all_short_arc_times_must_be_on_same_pole"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)重复试验逻辑 | 在试验方式1或2中出现1次重击穿 | repeat_both_sequences"
+                  },
+                  {
+                    "name": "规则: 试验次数上限控制（三相） | 燃弧时间无法精确控制 | test_count <= 36"
+                  },
+                  {
+                    "name": "规则: 单相BC1试验方式操作分布规则 | 试验方式为BC1且为单相 | {\"close_rows\": 0, \"open_rows\": 12, \"open_short_arc_rows\": 6, \"open_other_rows\": 12, \"open_short_arc_other_rows\": 6}"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 气体回收与再充要求 | 端子接线倒换导致气体压力降低 | recharge_at_least_50_percent_used_gas"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 三相BC1试验方式操作分布规则 | 试验方式为BC1且为三相 | {\"close_rows\": 0, \"open_rows\": 6, \"open_short_arc_rows\": 3, \"open_other_rows\": 6, \"open_short_arc_other_rows\": 3}"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC1)在C1级重新划分中的适用次数 | 三相试验 | test_count == 104"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "容性电流开断试验(BC2)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验类别: 背对背电容器组开合试验或单个电容器组开合试验"
+                  },
+                  {
+                    "name": "试验次数: 单相120次，三相80次 次"
+                  },
+                  {
+                    "name": "开合容性电流能力的级别: C1或C2"
+                  },
+                  {
+                    "name": "试验相数: 40.5及以下固定3相，72.5~126kV客户选择单相或三相，252及以上固定单相"
+                  },
+                  {
+                    "name": "关合涌流的频率: Ibi=20kA对应4250Hz（背对背工况）"
+                  },
+                  {
+                    "name": "试验电压: 三相试验试验电压为额定电压；单相试验试验电压为容性电压系数kc×Ur除根3"
+                  },
+                  {
+                    "name": "操作顺序: 单相120次CO"
+                  },
+                  {
+                    "name": "额定电压: 用户录入（试验电压基础） / 用户录入（试验电压基础）"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: BC1与BC2测试中允许一次重击穿并要求重做 | restrike_occurred == true | retest_required = true"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)总次数上限（燃弧时间不可控） | 由于断路器特性妨碍燃弧时间精确控制 | test_count <= 100"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)操作分布规则 | 试验方式2(BC2) | close_rows=80; open_rows=0; close_distributed_by_polarity=2; close_step_15deg=8; close_min_arc_time=64"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)空载合闸次数 | 单相电容器组背对背试验 | test_count_additional_no_load_close = 40"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验电压依据表D.1、D.2、D.3 | 容性电流开断 | table_ref=D.1,D.2,D.3"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)重击穿次数判定规则 | 试验方式为BC1或BC2 | total_restrikes <= 5"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)重复试验逻辑 | 在试验方式1或2中出现1次重击穿 | repeat_both_sequences"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)在C1级重新划分中的适用次数 | 三相试验 | test_count == 104"
+                  },
+                  {
+                    "name": "规则: 容性电流开断试验(BC2)在C1级重新划分中的适用次数 | 单相试验 | test_count == 168"
+                  },
+                  {
+                    "name": "规则: 快速重合闸断路器操作顺序 | 用于快速自动重合闸的断路器应能完成“O—0.3s—CO”操作顺序 | operation_sequence = \"O-0.3s-CO\""
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "短路性能型式试验",
+        "children": [
+          {
+            "name": "短路开断试验(T100a)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 3次O"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  },
+                  {
+                    "name": "最短分闸时间: 制造厂声明的最短分闸时间 s"
+                  },
+                  {
+                    "name": "试验相数: 40.5kV及以下默认三相"
+                  },
+                  {
+                    "name": "时间常数: 用户输入τ ms"
+                  },
+                  {
+                    "name": "试验电压: 40.5kV及以下默认为额定电压 kV"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: T100a开断电流峰值限制 | test_item == '短路开断试验(T100a)' | peak_current <= 1.1 * rated_short_circuit_making_current"
+                  },
+                  {
+                    "name": "规则: 预期电流不低于额定值 | 设备含限流装置 | 预期电流（峰值、有效值、持续时间）不应小于额定值"
+                  },
+                  {
+                    "name": "规则: 试验电流整定偏差 | 外施电压等于额定电压 | test_current_ka = rated_arc_fault_current ±15%"
+                  },
+                  {
+                    "name": "规则: T100a可省略条件 | T100a试验被省略 | T100s must cover both wiring configurations"
+                  },
+                  {
+                    "name": "规则: T100a必须在50Hz和60Hz下都进行 | 同时认证50Hz和60Hz | T100a必须在50Hz和60Hz下都进行"
+                  },
+                  {
+                    "name": "规则: kpp值默认条件（T100a） | 中性点有效接地系统且三相不接地故障不可能 | first_pole_to_clear_factor_kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: T100a试验参数查表规则 | 试验方式T100a | 根据τ和最短开断时间t查找表11中对应的I_hat、Δt1、Δta1、Δt2、Δta2、Δt3、Δta3值，依据kpp=1.5或1.3选择列"
+                  },
+                  {
+                    "name": "规则: T100a DC component calculation | %dc = 100 × exp(-(T_op + T_r)/τ)"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: ITRV覆盖条件：额定电压>800kV且L90试验时延<100ns且波阻抗=450Ω | 断路器额定电压 > 800kV 且 进行近区故障试验L90 且 线路时延 < 100ns 且 线路波阻抗 = 450Ω | ITRV要求被覆盖"
+                  },
+                  {
+                    "name": "规则: 峰值电流计算 | 额定频率为50Hz及以下 | peak_current = 2.5 × test_current_ka"
+                  },
+                  {
+                    "name": "规则: 峰值电流计算（60Hz） | 额定频率为60Hz | peak_current = 2.6 × test_current_ka"
+                  },
+                  {
+                    "name": "规则: 试验频率允许偏差 | 额定频率为50Hz | test_frequency ∈ [48Hz, 52Hz]"
+                  },
+                  {
+                    "name": "规则: 试验频率允许偏差（其他频率） | 额定频率非50Hz | test_frequency ∈ [rated_frequency × 0.9, rated_frequency × 1.1]"
+                  },
+                  {
+                    "name": "规则: 三相试验要求 | 隔室类型为三相隔室或连接隔室且非单相 | test_phases = 3"
+                  },
+                  {
+                    "name": "规则: 单相试验触发条件 | 隔室类型为单相隔室或表B.1中指定为单相对地 | test_phases = 1 AND fault_type = 'single-phase-to-ground'"
+                  },
+                  {
+                    "name": "规则: 单相引燃后重做三相 | 单相试验中剩余相被引燃 | if arc_ignites_in_remaining_phase then repeat_as_three_phase"
+                  },
+                  {
+                    "name": "规则: 表B.1试验电流选择 | if (insulation_type = 'non-field-made solid' OR 'insert-type connection') then test_current_ka = 87% × I_Ae else test_current_ka = I_A or I_Ae"
+                  },
+                  {
+                    "name": "规则: 单相对地试验触发条件 | 设备规定了 I_Ae 值 | if I_Ae is specified then perform single-phase-to-ground test"
+                  },
+                  {
+                    "name": "规则: I_Ae > 87% I_Ae 时的相间试验 | I_Ae > 87% × I_Ae | interphase_test_current = I_Ae"
+                  },
+                  {
+                    "name": "规则: 相间试验电流值 | I_Ae > 87% × I_Ae | test_current_ka = I_Ae"
+                  },
+                  {
+                    "name": "规则: T100a试验有效判据 | 对于试验方式T100a | $\\hat{I} \\times \\Delta t$ 乘积应在要求值的90%至110%之间"
+                  },
+                  {
+                    "name": "规则: T100a试验电压适用条件 | 设备包含限流装置 | 试验电压应为额定电压"
+                  },
+                  {
+                    "name": "规则: 非限流设备试验电压可替代条件 | 设备不含限流装置 | 试验电压可为任一方便电压，只要峰值电流和热效应 ≥ 额定电压下的值"
+                  },
+                  {
+                    "name": "规则: 试验布置最严酷条件 | 设备含多个隔室或并排/多层设计 | 试验应在开关装置处于最严酷位置进行"
+                  },
+                  {
+                    "name": "规则: 试验前主回路电阻测量 | 非接地开关 | 每次试验前必须进行主回路电阻测量"
+                  },
+                  {
+                    "name": "规则: T100a最大燃弧时间无法获得时以18°步进验证 | 最小燃弧时间小于t_a100s | increment_by_18_degrees_to_find_max_arc_time"
+                  },
+                  {
+                    "name": "规则: T100a的RRRV计算采用线性插值 | 非标准额定电压 | RRRV_linear_interpolation_between_table_16_to_27"
+                  },
+                  {
+                    "name": "规则: T100a试验中ITRV必须满足 | 试验方式为T100a | 必须进行ITRV条件下的试验"
+                  },
+                  {
+                    "name": "规则: T100a 试验的燃弧时间计算规则 | 试验方式为T100a | t_arcl = t_100s + Δta1 - T * (dα/360); t_arc2 = t_100s + Δta2 - T * (dα/360) 当 k_pp=1.5; t_arc3 = t_100s + Δta3 - T * (dα/360) 当 k_pp=1.3"
+                  },
+                  {
+                    "name": "规则: T100a 试验的总试验次数上限规则 | 试验方式为T100a | test_count <= 6"
+                  },
+                  {
+                    "name": "规则: T100a开断电流容差 | ±10%"
+                  },
+                  {
+                    "name": "规则: T100a短路电流峰值容差 | ≤110%"
+                  },
+                  {
+                    "name": "规则: 脱扣命令调整 | 无法满足燃弧时间要求 | adjust_trip_command_by_18_degrees"
+                  },
+                  {
+                    "name": "规则: T100a 试验的k_pp取值规则 | 试验方式为T100a | k_pp = 1.5 或 k_pp = 1.3"
+                  },
+                  {
+                    "name": "规则: T100a非对称开断有效性判据 | 试验方式T100a | 90% ≤ (I_hat / I_hat_required) ≤ 110% AND 90% ≤ (Δt / Δt_required) ≤ 110% AND 90% ≤ (I_hat × Δt) / (I_hat_required × Δt_required) ≤ 110%"
+                  },
+                  {
+                    "name": "规则: T100a分闸脱扣脉冲提前角 | 试验方式T100a | 脱扣脉冲提前40电角度"
+                  },
+                  {
+                    "name": "规则: T100a applicability condition | 触头分离时刻直流分量 > 20% | dc_component > 20%"
+                  },
+                  {
+                    "name": "规则: kpp值选择条件（T100a） | 中性点非有效接地系统或三相不接地故障可能性不容忽视的系统 | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: T100a TRV condition | TRV must satisfy 7.104, 7.103.4, and 7.105.5.2"
+                  },
+                  {
+                    "name": "规则: Re-test T100a if trip time reduced | 断路器分闸时间因快速脱扣器缩短且落入更短区间 | if min_opening_time < previous_interval && trip_device_passed_test, then retest T100a only in new interval"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "于中性点非有效接地三相系统的属封闭开关设备和控制设备应进相试验。\n\n在给定的电压，电流和持续时间下进的试验通常对于所有较低的电流电压和持续时间有效。\n\n低的电流能影响压力择放装置的性能和烧穿特性：对于低于试验值的短路电流水平，解释试验\n\n子以注意"
+                  },
+                  {
+                    "name": "对于中性点直接接地的系统，接地回路的最大短路电流可以达到主回路的额定短时耐受电流。\n\n对于不同于中性点直接接地的系统，接地回路的最大短时电流理论上可以达到主回路的额定短时耐受电流的 $87 \\%$ （异相接地故障条件下的短路）。但是，异相接地故障完全流过开关设备和控制设备接地回路的概率非常小。因此，该条件可能不适用，且..."
+                  },
+                  {
+                    "name": "7.106 短路试验程序"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "近区故障试验(L90)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 用户录入额定电压除根3"
+                  },
+                  {
+                    "name": "试验次数: 1次"
+                  },
+                  {
+                    "name": "线路侧波阻抗: 450 Ω Ω"
+                  },
+                  {
+                    "name": "操作顺序: 额定操作顺序（用户录入）"
+                  },
+                  {
+                    "name": "外壳是否带电: 用户录入"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  },
+                  {
+                    "name": "试验电流kA: 90%×额定短路开断电流（用户录入） kA"
+                  },
+                  {
+                    "name": "试验相数: 单相"
+                  },
+                  {
+                    "name": "SF6气体的最低功能压力(20℃表压): 制造厂）"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: L90时延tdL容差 | -10%"
+                  },
+                  {
+                    "name": "规则: 波阻抗按额定电压分段 | Z = 450 Ω for 24≤Ur≤800, Z = 330 Ω for Ur>800"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 近区故障TRV计算依据（L90） | 断路器安装处线路波阻抗和峰值系数与表25比较 | line_side_wave_impedance <= table25_limit and peak_coefficient <= table25_limit and delay >= table25_limit"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: L90开断电流范围 | 90%~92%"
+                  },
+                  {
+                    "name": "规则: L90必须在50Hz和60Hz下都进行 | 同时认证50Hz和60Hz | L90必须在50Hz和60Hz下都进行"
+                  },
+                  {
+                    "name": "规则: L90线路侧电压上升率容差 | +50%"
+                  },
+                  {
+                    "name": "规则: 近区故障试验回路类型选择 | 断路器两个端子电气相同 | 回路b2)可替代回路b1)"
+                  },
+                  {
+                    "name": "规则: 额定电压与波阻抗关联规则 | 额定电压 > 800kV | line_side_wave_impedance = 450Ω (默认), 可替换为330Ω (ITRV失败后)"
+                  },
+                  {
+                    "name": "规则: 近区故障试验TRV参数表引用 | 额定电压在24~40.5kV、72.5~126kV、252~800kV、>800kV | table_ref=表26, target_param_key=test_voltage, close_rows=4, open_rows=0, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 电源侧TRV时延不足补偿规则 | 电源侧TRV要求无法满足 | u_L,mod* = f(t_d, 图45/50/52)"
+                  },
+                  {
+                    "name": "规则: 线路侧时延按额定电压分段 | tdL = 0.1 μs for 24≤Ur≤40.5, tdL = 0.2 μs for 72.5≤Ur≤126, tdL = 0.5 μs for 252≤Ur≤800 or Ur>800"
+                  },
+                  {
+                    "name": "规则: RRRV系数按额定电压分段 | S = 0.200 for 24≤Ur≤800, S = 0.147 for Ur>800"
+                  },
+                  {
+                    "name": "规则: 近区故障试验类型对应表 | close_rows: 1, open_rows: 1, fracture_rows: 1"
+                  },
+                  {
+                    "name": "规则: L90试验TRV依据表E.2和I.2、I.3、I.4 | 近区故障试验(L90) | table_ref=E.2,I.2,I.3,I.4"
+                  },
+                  {
+                    "name": "规则: TRV波形计算方法 | TRV波形无叠加分量 | 使用包络线法"
+                  },
+                  {
+                    "name": "规则: L90近区故障试验适用条件 | 额定电压252kV，额定短路电流50kA，额定频率50Hz | L90试验适用于252kV/50kA/50Hz系统"
+                  },
+                  {
+                    "name": "规则: L90线路侧TRV参数计算依据 | L90近区故障试验 | 根据表I.2和表25计算线路侧TRV参数"
+                  },
+                  {
+                    "name": "规则: L90波阻抗容差 | ±3%"
+                  },
+                  {
+                    "name": "规则: L90线路侧电压峰值容差 | +200%"
+                  },
+                  {
+                    "name": "规则: TRV波形计算方法 | TRV波形有三种分量（电源侧TRV、电源侧ITRV、线路侧TRV） | 使用实际波形，不使用包络线法"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "left( {{252}\\mathrm{{kV}},{50}\\mathrm{{kA}},{50}\\mathrm{\\;{Hz}}\\text{时的}{L}_{90}\\text{、}{L}_{75}}\\right)$"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "失步关合和开断试验(OP1)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 用户输入额定电压除根3。126及以上kpp=1.3的为2.0倍用户输入额定电压除根3。"
+                  },
+                  {
+                    "name": "操作顺序: O-O-O"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: t3值获取优先级 | 小的t3值不能获得 | use_min_available_t3"
+                  },
+                  {
+                    "name": "规则: OP1试验TRV依据表E.1 | 失步关合和开断试验(OP1) | table_ref=E.1"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV及以上且kpp=2.0 | table_ref=表23; open_rows=6"
+                  },
+                  {
+                    "name": "规则: 首开极系数kpp默认值 | 额定电压126kV以下 | kpp = 2.5"
+                  },
+                  {
+                    "name": "规则: 首开极系数kpp默认值 | 额定电压126kV及以上 | kpp = 2.0"
+                  },
+                  {
+                    "name": "规则: OP1 试验的 TRV 参数依据表20、表21、表22、表23 | 试验方式 OP1 或 OP2，kpp 为 2.5 或 2.0 | table_ref=表20, table_ref=表21, table_ref=表22, table_ref=表23, target_param_key=trv_parameters"
+                  },
+                  {
+                    "name": "规则: OP1和OP2的TRV表示方法 | 对于OP1和OP2试验方式 | TRV由四参数法更改为两参数法表示"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV及以上且kpp=2.5 | table_ref=表22; open_rows=1"
+                  },
+                  {
+                    "name": "规则: t3、td、t'为范围值时的试验约束 | 额定电压126kV及以上 | td_min=2μs; td_max=73μs; t'_min=52μs; t'_max=559μs; t2_t3_min=200μs; t2_t3_max=2544μs"
+                  },
+                  {
+                    "name": "规则: 首开极系数为1.5的默认值 | 所有试验方式 | kpp_default = 1.5"
+                  },
+                  {
+                    "name": "规则: 中性点接地条件 | 额定电压126kV以上 | neutral_grounding = effective"
+                  },
+                  {
+                    "name": "规则: 试验时间间隔上限 | 试验间隔超过10min | must_report_reason_for_delay"
+                  },
+                  {
+                    "name": "规则: OP1试验可免去条件 | 当T10试验方式不发生临界电流现象 | OP1可免去"
+                  },
+                  {
+                    "name": "规则: 失步角覆盖范围 | 额定电压大于800kV | asymmetry_angle_covered = 115°"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "30、T10以及失步开断试验，时间 $t^{\\prime}$ 按照图42由 $u^{\\prime},\\frac{u_{\\mathrm{c}}}{t_{3}}$ 和 $t_\\mathrm{d}$ 导出。定电压 $126\\mathrm{kV}$ 及以上，TRV的规定值在表18和表19中给出。"
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "近区故障试验(L75)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "线路侧波阻抗: 450 Ω"
+                  },
+                  {
+                    "name": "试验电压: 用户录入额定电压除根3"
+                  },
+                  {
+                    "name": "试验电流kA: 75%×额定短路开断电流（用户录入） kA"
+                  },
+                  {
+                    "name": "操作顺序: 额定操作顺序（用户录入）"
+                  },
+                  {
+                    "name": "试验次数: 1次"
+                  },
+                  {
+                    "name": "SF6气体的最低功能压力(20℃表压): 制造厂）"
+                  },
+                  {
+                    "name": "试验相数: 单相"
+                  },
+                  {
+                    "name": "外壳是否带电: 用户录入"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 近区故障TRV计算依据（L75） | 断路器安装处线路波阻抗和峰值系数与表25比较 | line_side_wave_impedance <= table25_limit and peak_coefficient <= table25_limit and delay >= table25_limit"
+                  },
+                  {
+                    "name": "规则: L75试验TRV依据表I.2 | 近区故障试验(L75) | table_ref=I.2"
+                  },
+                  {
+                    "name": "规则: RRRV系数按额定电压分段 | S = 0.200 for 24≤Ur≤800, S = 0.147 for Ur>800"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: 近区故障试验适用电压等级 | 额定电压≥126kV | I_SC ≥ 126 kV"
+                  },
+                  {
+                    "name": "规则: TRV峰值电压计算公式 | 近区故障试验 | U_m = ω × (L_L + L_S) × I_L × √2"
+                  },
+                  {
+                    "name": "规则: 试验电压修正系数 | 额定电压≥126kV | U_{1,test} = u_1 × [1 + 1/3 × (1 - I_L/I_SC)]"
+                  },
+                  {
+                    "name": "规则: 线路侧TRV峰值电压计算 | 近区故障试验 | u_L* = k × u_0"
+                  },
+                  {
+                    "name": "规则: 近区故障试验次数 | 额定电压≥126kV | close_rows=3, open_rows=3"
+                  },
+                  {
+                    "name": "规则: 线路长度估算 | 近区故障试验 | l = c × t_L / 2, c=0.3 km/μs"
+                  },
+                  {
+                    "name": "规则: 近区故障试验类型对应表 | close_rows: 1, open_rows: 1, fracture_rows: 1"
+                  },
+                  {
+                    "name": "规则: 线路侧TRV第一峰值时间计算 | 近区故障试验 L90、L75、L60 | t_T = t_dL + t_L + Δt"
+                  },
+                  {
+                    "name": "规则: ITRV存在时电源侧电压计算 | 有ITRV要求 | u_s* = u_i0 + RRRV_SLF * (t_dL + t_L + Δt - t_d)"
+                  },
+                  {
+                    "name": "规则: ITRV电压分量计算 | 有ITRV要求 | u_i = f_i * I_L = k_i * L_B * di/dt"
+                  },
+                  {
+                    "name": "规则: L75开断电流范围 | Ur≤72.5kV | 12 kV"
+                  },
+                  {
+                    "name": "规则: L75开断电流范围 | Ur>72.5kV | 71%~79%"
+                  },
+                  {
+                    "name": "规则: ITRV乘数f_i来源 | 有ITRV要求 | f_i 从表10查取"
+                  },
+                  {
+                    "name": "规则: TRV波形计算方法 | TRV波形无叠加分量 | 使用包络线法"
+                  },
+                  {
+                    "name": "规则: L75近区故障试验适用条件 | 额定电压252kV，额定短路电流50kA，额定频率50Hz | L75试验适用于252kV/50kA/50Hz系统"
+                  },
+                  {
+                    "name": "规则: L75线路侧TRV参数计算依据 | L75近区故障试验 | 根据表I.2和表25计算线路侧TRV参数"
+                  },
+                  {
+                    "name": "规则: L75试验电流与线路长度偏差关系 | 额定电压≥24kV | I_L = 75% I_sc when L_length_deviation = 0%, I_L = 71% I_sc when L_length_deviation = +20%, I_L = 79% I_sc when L_length_deviation = -20%"
+                  },
+                  {
+                    "name": "规则: 线路侧时延按额定电压分段 | tdL = 0.1 μs for 24≤Ur≤40.5, tdL = 0.2 μs for 72.5≤Ur≤126, tdL = 0.5 μs for 252≤Ur≤800 or Ur>800"
+                  },
+                  {
+                    "name": "规则: TRV波形计算方法 | TRV波形有三种分量（电源侧TRV、电源侧ITRV、线路侧TRV） | 使用实际波形，不使用包络线法"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "left( {{252}\\mathrm{{kV}},{50}\\mathrm{{kA}},{50}\\mathrm{\\;{Hz}}\\text{时的}{L}_{90}\\text{、}{L}_{75}}\\right)$"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "短路开断试验(T10)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 均默认1个操作顺序"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  },
+                  {
+                    "name": "试验电压: 40.5kV以上默认为额定电压 / 40.5kV以上默认为额定电压 kV"
+                  },
+                  {
+                    "name": "操作顺序: 用户录入额定操作顺序"
+                  },
+                  {
+                    "name": "试验相数: 40.5kV及以下默认为三相"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: T10操作顺序时间间隔 | test_item == '短路开断试验(T10)' | time_interval == rated_operation_sequence_interval"
+                  },
+                  {
+                    "name": "规则: T10试验TRV计算规则 | 试验方式为T10 | close_rows=3, open_rows=3, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 辅助装置非主回路规则 | 进行短时耐受电流和峰值耐受电流试验时 | 到辅助装置（例如电压互感器、辅助变压器、避雷器、脉冲电容器、电压检测装置和类似装置）的连接线不是主回路的一部分"
+                  },
+                  {
+                    "name": "规则: T10试验方式下u'=uc/3 | 试验方式T10 | u' = uc / 3"
+                  },
+                  {
+                    "name": "规则: 主回路试验条件规则 | 进行短时耐受电流和峰值耐受电流试验时 | 应在预定的安装和使用条件下对主回路进行试验，同所有影响其性能或改变短路电流的附属元件一起装在金属封闭开关设备和控制设备内"
+                  },
+                  {
+                    "name": "规则: 附加试验时机 | 未维修且进行多种试验 | after_short_circuit_test AND before_or_after_no_load_test"
+                  },
+                  {
+                    "name": "规则: T10可在50Hz或60Hz下任选其一 | 同时认证50Hz和60Hz | T10可在50Hz或60Hz下任选其一"
+                  },
+                  {
+                    "name": "规则: 操作顺序默认值 | 自动重合闸断路器 | t = 3 min, t' = 3 min"
+                  },
+                  {
+                    "name": "规则: 操作顺序默认值 | 非自动重合闸断路器 | t > 3 min, t' > 3 min"
+                  },
+                  {
+                    "name": "规则: 有限流装置试验电压规则 | 设备有限流装置 | 应在开关设备和控制设备的额定电压下试验"
+                  },
+                  {
+                    "name": "规则: T10试验的首开极系数默认值 | 额定电压126kV及以上且系统为中性点有效接地 | 首开极系数kpp取1.3"
+                  },
+                  {
+                    "name": "规则: 额定失步开断电流计算 | test_current_ka = 0.25 * rated_short_circuit_breaking_current"
+                  },
+                  {
+                    "name": "规则: T10试验TRV依据表E.3 | 短路开断试验(T10) | table_ref=E.3"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: t3值不可得时的处理 | 无法获得规定t3值 | 采用所能达到的最小t3值"
+                  },
+                  {
+                    "name": "规则: 电流互感器和脱扣装置安装规则 | 进行短时耐受电流和峰值耐受电流试验时 | 电流互感器和脱扣装置应按正常运行条件装设，但脱扣器不得动作"
+                  },
+                  {
+                    "name": "规则: 替代试验电压条件规则 | 使用其他试验电压 | 只要在施加的电压下产生的峰值电流和热效应大于或等于额定电压下的值，也可用其他的试验电压"
+                  },
+                  {
+                    "name": "规则: kpp值默认条件（T10） | 中性点有效接地系统且三相不接地故障不可能 | first_pole_to_clear_factor_kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: 无有限流装置试验电压规则 | 设备没有限流装置 | 可在任一方便的电压下试验"
+                  },
+                  {
+                    "name": "规则: 三相试验开断次数 | 中性点有效接地回路 | close_rows=1, open_rows=1, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: T10试验方式下td=0.15×t3 | 试验方式T10 | td = 0.15 × t3"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: T10开断电流容差 | ±20%"
+                  },
+                  {
+                    "name": "规则: 附加短路开断试验适用条件 | 灭弧介质变化且状态检查不足 | arc_quenching_medium_changed == true AND state_check_insufficient == true"
+                  },
+                  {
+                    "name": "规则: T10试验方式下t'由u', duc/dt, td按图42导出 | 试验方式T10 | t' = f(u', duc/dt, td) [图42]"
+                  },
+                  {
+                    "name": "规则: kpp值选择条件（T10） | 中性点非有效接地系统或三相不接地故障可能性不容忽视的系统 | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: E2级断路器在架空线网络或自动重合闸下需满足短路开断要求 | 断路器等级为E2且用于架空线网络或自动重合闸 | 必须提供表32中7、8、9、14、15、16、17项参数"
+                  },
+                  {
+                    "name": "规则: 试验相数规则 | 进行短时耐受电流和峰值耐受电流试验时 | 应进行额定相数的试验"
+                  },
+                  {
+                    "name": "规则: 限流装置设备预期电流规则 | 包含限流装置的设备 | 预期电流（峰值、有效值和持续时间）不应小于额定值"
+                  },
+                  {
+                    "name": "规则: T10试验的振幅系数计算 | 三相线路故障且kpp=1.3 | 振幅系数 = 1.765"
+                  },
+                  {
+                    "name": "规则: 表19中T10的td和t'值适用性 | 额定电压126kV，试验方式T10 | td=5μs, t'=16μs"
+                  },
+                  {
+                    "name": "规则: 操作顺序默认值 | 快速自动重合闸断路器 | t = 0.3 s, t' = 3 min"
+                  },
+                  {
+                    "name": "规则: 无需附加试验条件 | 型式试验结束于中性点有效接地回路三极成功开断 | final_test_success == true AND neutral_grounding == 'effective' AND phases == 3"
+                  },
+                  {
+                    "name": "规则: T10关合操作可为空载 | test_item == '短路开断试验(T10)' | making_operation == 'no-load'"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "30、T10以及失步开断试验，时间 $t^{\\prime}$ 按照图42由 $u^{\\prime},\\frac{u_{\\mathrm{c}}}{t_{3}}$ 和 $t_\\mathrm{d}$ 导出。定电压 $126\\mathrm{kV}$ 及以上，TRV的规定值在表18和表19中给出。"
+                  },
+                  {
+                    "name": "充入压力/水平\n\nGB/T11022—2020的5.12适用。"
+                  },
+                  {
+                    "name": "7.106 短路试验程序"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "短路开断试验(T30)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 固定1次 / 固定1次"
+                  },
+                  {
+                    "name": "试验电压: 40.5kV以上默认为kpp×额定电压 / 40.5kV以上默认为kpp×额定电压 kV"
+                  },
+                  {
+                    "name": "试验相数: 40.5kV及以下默认为三相"
+                  },
+                  {
+                    "name": "操作顺序: 用户录入额定操作顺序"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: T10/T30/T60/T100s/OP1/OP2/L90/L75/L60 试验的k_pp取值规则 | 试验方式为T10、T30、T60、T100s、OP1、OP2、L90、L75或L60 | k_pp = 1.3 或 k_pp = 1.5"
+                  },
+                  {
+                    "name": "规则: T30试验TRV计算规则 | 试验方式为T30 | close_rows=3, open_rows=3, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: T30试验覆盖高上升率TRV | 断路器一端连接变压器且TRV上升率高于表16~19规定 | if TRV_rise_rate > table16_19_limit and test_method = T30 then pass"
+                  },
+                  {
+                    "name": "规则: T30操作顺序时间间隔 | test_item == '短路开断试验(T30)' | time_interval == rated_operation_sequence_interval"
+                  },
+                  {
+                    "name": "规则: 额定短路关合电流计算规则（其他时间常数） | 直流时间常数为60ms、75ms或120ms | making_current = 2.7 × test_current_ka"
+                  },
+                  {
+                    "name": "规则: T100试验替代条件 | 变电站仅一台变压器馈电，且短路电流等于额定短路开断电流，电容满足表16或17的TRV参数 | 可使用T100代替T30"
+                  },
+                  {
+                    "name": "规则: 近区故障电流计算 | 中性点接地系统单相近区故障 | I_L = I_SC * (U_L / U_G)"
+                  },
+                  {
+                    "name": "规则: T30试验方式适用条件 | 额定电压3.6kV ≤ Ur < 126kV 且中性点非有效接地 | TRV参数符合表H.1"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 额定短路关合电流计算规则（60Hz, 45ms） | 额定频率60Hz且直流时间常数45ms | making_current = 2.6 × test_current_ka"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r <= 40.5 kV | time_constant = 120 ms"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r = 550 kV or U_r = 800 kV | time_constant = 75 ms"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | 72.5 kV <= U_r <= 363 kV | time_constant = 60 ms"
+                  },
+                  {
+                    "name": "规则: T30开断电流容差 | ±20%"
+                  },
+                  {
+                    "name": "规则: kpp值选择条件 | 中性点非有效接地系统或三相不接地故障可能性不容忽视的系统 | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: 首开极系数适用条件 | U_r <= 1100 kV and neutral effectively grounded | first_pole_to_clear_factor_kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: TLF故障首开极系数 | 额定电压 > 800kV 且使用TLF试验方式 | kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r > 800 kV | time_constant = 120 ms"
+                  },
+                  {
+                    "name": "规则: T30三相试验附加单相试验条件 | 中性点有效接地系统且T30为三相 | 增加单相试验，kpp=1.5，燃弧时间=0.7×半周期"
+                  },
+                  {
+                    "name": "规则: T10和T30的t3时间无法满足时使用最短可能时间 | t3时间无法满足 | use_shortest_possible_t3"
+                  },
+                  {
+                    "name": "规则: 限流电抗器TRV调节要求 | 断路器与限流电抗器串联且TRV频率过高 | if TRV_frequency > standard_limit then apply_capacitor_reactor_parallel_or_grounding"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 额定短路关合电流计算 | making_current = test_current_ka * peak_factor"
+                  },
+                  {
+                    "name": "规则: T30关合操作可为空载 | test_item == '短路开断试验(T30)' | making_operation == 'no-load'"
+                  },
+                  {
+                    "name": "规则: 表H.1 TRV参数映射 | 额定电压在3.6kV至72.5kV范围内 | trv_parameters = lookup(H.1, Ur)"
+                  },
+                  {
+                    "name": "规则: TLF开断电流优选值 | 额定电压 > 800kV 且变压器对地电容为9000pF | TLF电流优选值为10kA或12.5kA"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: T30可在50Hz或60Hz下任选其一 | 同时认证50Hz和60Hz | T30可在50Hz或60Hz下任选其一"
+                  },
+                  {
+                    "name": "规则: 表H.2 TLF TRV参数映射 | 额定电压 = 1100kV 且 TLF电流 = 10kA 或 12.5kA | trv_parameters = lookup(H.2, Ur, TLF_current)"
+                  },
+                  {
+                    "name": "规则: TLF试验电容值 | 额定电压 > 800kV | transformer_capacitance = 9 nF"
+                  },
+                  {
+                    "name": "规则: 近区故障电源电压计算 | 中性点接地系统单相近区故障 | U_G = U_r / sqrt(3)"
+                  },
+                  {
+                    "name": "规则: T30试验TRV依据表H.1 | 短路开断试验(T30) | table_ref=H.1"
+                  },
+                  {
+                    "name": "规则: 额定短路关合电流计算规则 | 额定频率50Hz且直流时间常数45ms | making_current = 2.5 × test_current_ka"
+                  },
+                  {
+                    "name": "规则: 首开极系数适用条件 | U_r <= 126 kV and neutral not effectively grounded | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: 短路持续时间与电流平方乘积关系 | 短路持续时间超过额定值 | I² × t = constant"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  },
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "充入压力/水平\n\nGB/T11022—2020的5.12适用。"
+                  },
+                  {
+                    "name": "7.106 短路试验程序"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "短路开断试验(T60)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 均默认1个操作顺序"
+                  },
+                  {
+                    "name": "试验电压: 40.5kV及以下默认为额定电压 kV"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  },
+                  {
+                    "name": "操作顺序: 用户录入额定操作顺序"
+                  },
+                  {
+                    "name": "试验相数: 40.5kV及以下默认为三相"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: kpp值选择条件（T60） | 中性点非有效接地系统或三相不接地故障可能性不容忽视的系统 | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: T60时延td和t'为上下限范围 | 试验方式为T60 | 时延td不应短于下限，不应长于上限；时间t'不应短于下限，不应长于上限"
+                  },
+                  {
+                    "name": "规则: T60试验TRV计算规则 | 试验方式为T60 | close_rows=3, open_rows=3, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | 72.5 kV <= U_r <= 363 kV | time_constant = 60 ms"
+                  },
+                  {
+                    "name": "规则: T60开断电流容差 | ±10%"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: T60操作顺序时间间隔 | test_item == '短路开断试验(T60)' | time_interval == rated_operation_sequence_interval"
+                  },
+                  {
+                    "name": "规则: T60试验方式下t'由u', du1/dt, td按图41导出 | 试验方式T60 | t' = f(u', du1/dt, td) [图41]"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: T60关合操作可为空载 | test_item == '短路开断试验(T60)' | making_operation == 'no-load'"
+                  },
+                  {
+                    "name": "规则: T60试验方式下u'=u1/2 | 试验方式T60 | u' = u1 / 2"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r = 550 kV or U_r = 800 kV | time_constant = 75 ms"
+                  },
+                  {
+                    "name": "规则: T60的RRRV计算采用线性插值 | 非标准额定电压 | RRRV_linear_interpolation_between_table_16_to_27"
+                  },
+                  {
+                    "name": "规则: T60试验td和t'的范围约束 | 额定电压126kV及以上 | 时延td和时间t'不宜短于下限值，也不宜长于上限值"
+                  },
+                  {
+                    "name": "规则: kpp值默认条件（T60） | 中性点有效接地系统且三相不接地故障不可能 | first_pole_to_clear_factor_kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: T60试验方式下t2=4.5t1（>800kV） | 额定电压>800kV | t2 = 4.5 × t1"
+                  },
+                  {
+                    "name": "规则: T60试验允许使用kpp=1.5回路替代kpp=1.3 | 仅要求kpp=1.3性能 | kpp=1.5"
+                  },
+                  {
+                    "name": "规则: T10/T30/T60/T100s/OP1/OP2/L90/L75/L60 三相等效单相试验的燃弧时间计算规则 | 试验方式为T10、T30、T60、T100s、OP1、OP2、L90、L75或L60 | t_arcmax = t_arcmin + T * (162/360) 当 k_pp = 1.3；t_arcmax = t_arcmin + T * (132/360) 当 k_pp = 1.5"
+                  },
+                  {
+                    "name": "规则: T60试验t2时间计算规则 | 对于额定电压大于800kV的断路器 | t2 = 4.5 × t1"
+                  },
+                  {
+                    "name": "规则: T60试验方式下td在2μs和0.3t1之间 | 试验方式T60 | 2μs ≤ td ≤ 0.3 × t1"
+                  },
+                  {
+                    "name": "规则: T60试验的首开极系数默认值 | 额定电压126kV及以上且系统为中性点有效接地 | 首开极系数kpp取1.3"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r <= 40.5 kV | time_constant = 120 ms"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r > 800 kV | time_constant = 120 ms"
+                  },
+                  {
+                    "name": "规则: 首开极系数适用条件 | U_r <= 1100 kV and neutral effectively grounded | first_pole_to_clear_factor_kpp = 1.3"
+                  },
+                  {
+                    "name": "规则: 首开极系数适用条件 | U_r <= 126 kV and neutral not effectively grounded | first_pole_to_clear_factor_kpp = 1.5"
+                  },
+                  {
+                    "name": "规则: 额定短路关合电流计算 | making_current = test_current_ka * peak_factor"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "7.106 短路试验程序"
+                  },
+                  {
+                    "name": "充入压力/水平\n\nGB/T11022—2020的5.12适用。"
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "短路开断试验(T100s)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验次数: 至少一次关合和一次开断"
+                  },
+                  {
+                    "name": "关合电流: 额定短路关合电流 kA"
+                  },
+                  {
+                    "name": "试验电压: 根3 kV kV"
+                  },
+                  {
+                    "name": "故障类型: 三相短路"
+                  },
+                  {
+                    "name": "操作顺序: 特征值默认为额定操作顺序用户提供特定的按照用户提供额定操作顺序展示"
+                  },
+                  {
+                    "name": "SF6气体的最低功能压力(20℃表压): 最低功能值"
+                  },
+                  {
+                    "name": "外壳是否带电: 用户录入"
+                  },
+                  {
+                    "name": "试验相数: 3"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入） kV"
+                  },
+                  {
+                    "name": "不均匀系数: 应符合设计要求"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: ITRV标准值表10 | 额定电压 >= 126kV | fi = multiplier * ISC, ti = given value, Zi = 260Ω for Ur <= 800kV, Zi = 325Ω for Ur >= 800kV"
+                  },
+                  {
+                    "name": "规则: T100s开断电流容差 | +50%"
+                  },
+                  {
+                    "name": "规则: 工频恢复电压最小值 | 工频恢复电压测量 | frequency_recovery_voltage >= 95% of specified value"
+                  },
+                  {
+                    "name": "规则: 试验前主回路电阻测量 | 非接地开关 | 每次试验前必须进行主回路电阻测量"
+                  },
+                  {
+                    "name": "规则: 工频恢复电压有效值计算 | 工频恢复电压测量 | v_rms = (V_i / (2 * sqrt(2))) * scale_factor"
+                  },
+                  {
+                    "name": "规则: T100s(a)关合电流持续时间 | test_item == '短路开断试验(T100s(a))' | current_duration >= 100ms"
+                  },
+                  {
+                    "name": "规则: T100s试验接线方式要求 | T100a试验被省略 | T100s must be performed for both wiring configurations"
+                  },
+                  {
+                    "name": "规则: L90试验波阻抗要求 | 额定电压 > 800kV 且 L90试验 | line_side_wave_impedance = 450 Ω"
+                  },
+                  {
+                    "name": "规则: L90试验覆盖ITRV要求 | L90试验时延 < 100ns 且端子电气对称 | ITRV requirements are deemed satisfied"
+                  },
+                  {
+                    "name": "规则: 工频恢复电压测量时间窗口 | 工频恢复电压测量 | measurement_window = 0.5/f to 1/f after arc extinction"
+                  },
+                  {
+                    "name": "规则: ITRV豁免条件2 | GIS断路器 | ITRV requirements are waived"
+                  },
+                  {
+                    "name": "规则: 非限流设备试验电压可替代条件 | 设备不含限流装置 | 试验电压可为任一方便电压，只要峰值电流和热效应 ≥ 额定电压下的值"
+                  },
+                  {
+                    "name": "规则: 表10~表13符号说明 | 表10~表13中增加符号说明"
+                  },
+                  {
+                    "name": "规则: T100s可拆分为T100s(a)和T100s(b) | test_item == '短路开断试验(T100s)' and (single_phase or equipment_limitation) | test_item == '短路开断试验(T100s(a))' + '短路开断试验(T100s(b))'"
+                  },
+                  {
+                    "name": "规则: ITRV豁免条件1 | 额定电压 < 126kV 且 额定短路开断电流 < 25kA | ITRV requirements are waived"
+                  },
+                  {
+                    "name": "规则: T100s替代试验回路时间常数等于规定值 | test_item == '短路开断试验(T100s)' and time_constant == specified_value | operation_sequence == 'C-t’-C + O-t-CO-t’-CO'"
+                  },
+                  {
+                    "name": "规则: T100s开断电流峰值限制 | test_item == '短路开断试验(T100s)' | peak_current <= 1.1 * rated_short_circuit_making_current"
+                  },
+                  {
+                    "name": "规则: 试验电压极性要求 | 增加试验电压处理极性的要求"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | U_r <= 40.5 kV | time_constant = 120 ms"
+                  },
+                  {
+                    "name": "规则: T100s试验电压适用条件 | 设备包含限流装置 | 试验电压应为额定电压"
+                  },
+                  {
+                    "name": "规则: T100s关合电流容差 | +100%"
+                  },
+                  {
+                    "name": "规则: ITRV豁免条件3 | 电源侧总电容 > 800pF | ITRV requirements are waived"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: 预期电流不低于额定值 | 设备含限流装置 | 预期电流（峰值、有效值、持续时间）不应小于额定值"
+                  },
+                  {
+                    "name": "规则: 试验布置最严酷条件 | 设备含多个隔室或并排/多层设计 | 试验应在开关装置处于最严酷位置进行"
+                  },
+                  {
+                    "name": "规则: T100s(b)在50Hz和60Hz下进行时T100s(a)无需重复 | T100s(b)已进行且无维护 | skip_T100s(a)"
+                  },
+                  {
+                    "name": "规则: T100s后触发状态检查电压试验 | 对于非终身密封断路器，若未进行L90 | if test_sequence does not include L90 then trigger_voltage_check_after_T100s"
+                  },
+                  {
+                    "name": "规则: T100s(a)相间电流偏差不超过10% | T100s(a)试验 | phase_current_deviation <= 10%"
+                  },
+                  {
+                    "name": "规则: 工频恢复电压维持时间 | 工频恢复电压测量 | frequency_recovery_voltage_duration >= 0.3 s"
+                  },
+                  {
+                    "name": "规则: T100s最短燃弧时间定义 | T100s试验 | t_a100s = shortest arcing time of first pole to clear"
+                  },
+                  {
+                    "name": "规则: T100s必须在50Hz和60Hz下都进行 | 同时认证50Hz和60Hz | T100s必须在50Hz和60Hz下都进行"
+                  },
+                  {
+                    "name": "规则: T100s试验TRV计算规则 | 试验方式为T100s | close_rows=3, open_rows=3, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 直流时间常数适用条件 | 72.5 kV <= U_r <= 363 kV | time_constant = 60 ms"
+                  },
+                  {
+                    "name": "规则: T100s替代试验回路时间常数小于规定值 | test_item == '短路开断试验(T100s)' and time_constant < specified_value | operation_sequence == 'C-t’-C + O-t-CO-t’-CO'"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "7.106 短路试验程序"
+                  },
+                  {
+                    "name": "充入压力/水平\n\nGB/T11022—2020的5.12适用。"
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "异相接地故障试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "断路器等级: 用户录入"
+                  },
+                  {
+                    "name": "试验电压: 用户录入额定电压"
+                  },
+                  {
+                    "name": "操作顺序: 额定操作顺序（用户录入）"
+                  },
+                  {
+                    "name": "试验相数: 单相"
+                  },
+                  {
+                    "name": "试验电流kA: 87%×额定短路开断电流（用户录入） kA"
+                  },
+                  {
+                    "name": "不均匀系数: 用户录入"
+                  },
+                  {
+                    "name": "SF6气体的最低功能压力(20℃表压): 制造厂）"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入）"
+                  },
+                  {
+                    "name": "试验次数: 40.5kV及以下默认为1次"
+                  },
+                  {
+                    "name": "外壳是否带电: 用户录入"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: Interphase TRV from Table 24 | u_c,sp = kaf × Ur × √2 (non-effective); t1,sp = t1 × u1,sp / u1; t3,sp = t3 × uc,sp / u_c; t2,sp = 4×t1,sp (126–800 kV), 3×t1,sp (1100 kV)"
+                  },
+                  {
+                    "name": "规则: Interphase ground fault test applicability | system neutral non-effectively grounded | system_neutral_grounding == 'non-effective'"
+                  },
+                  {
+                    "name": "规则: 异相接地故障试验适用系统 | 中性点非有效接地系统 | if (neutral_grounding_type == 'ineffective') then apply_interphase_ground_fault_test"
+                  },
+                  {
+                    "name": "规则: 异相接地故障试验直流分量上限 | ≤20%"
+                  },
+                  {
+                    "name": "规则: Interphase test on any pole | test_position == 'any_pole'"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 异相接地故障试验的 TRV 参数依据表24 | 异相接地故障试验 | table_ref=表24, target_param_key=trv_parameters"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "单相接地故障试验",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电流kA: 用户录入额定短路开断电流 kA"
+                  },
+                  {
+                    "name": "试验次数: 均默认为1次"
+                  },
+                  {
+                    "name": "操作顺序: 额定操作顺序（用户录入）"
+                  },
+                  {
+                    "name": "试验电压: 用户录入额定电压除根3"
+                  },
+                  {
+                    "name": "不均匀系数: 标准规定值"
+                  },
+                  {
+                    "name": "额定电压: 用户录入） / 额定电压（用户录入）"
+                  },
+                  {
+                    "name": "SF6气体的最低功能压力(20℃表压): 制造厂）"
+                  },
+                  {
+                    "name": "试验相数: 单相"
+                  },
+                  {
+                    "name": "断路器等级: 用户录入"
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: 单相接地故障试验开断电流容差 | +50%"
+                  },
+                  {
+                    "name": "规则: Single-phase test on outer pole | three-pole common operating mechanism | test_position == 'outer_pole'"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: Single-phase ground fault test applicability | system neutral effectively grounded | system_neutral_grounding == 'effective'"
+                  },
+                  {
+                    "name": "规则: Single-phase TRV from Table 24 | u_c,sp = kaf × Ur × √2 / √3 (effective), u_c,sp = kaf × Ur × √2 (non-effective); t1,sp = t1 × u1,sp / u1; t3,sp = t3 × uc,sp / u_c; t2,sp = 4×t1,sp (126–800 kV), 3×t1,sp (1100 kV)"
+                  },
+                  {
+                    "name": "规则: 单相接地故障试验适用系统 | 中性点有效接地系统 | if (neutral_grounding_type == 'effective') then apply_single_phase_ground_fault_test"
+                  },
+                  {
+                    "name": "规则: 单相接地故障试验的 TRV 参数依据表24 | 单相接地故障试验 | table_ref=表24, target_param_key=trv_parameters"
+                  },
+                  {
+                    "name": "规则: 单相接地故障试验直流分量上限 | ≤20%"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "RRRV for prospective TRVs associated with non-standard series I rated voltages, it shall be assumed that the relationship of rated voltage to RRRV is linear bet..."
+                  },
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "失步关合和开断试验(OP2)",
+            "children": [
+              {
+                "name": "特征值",
+                "children": [
+                  {
+                    "name": "试验电压: 用户输入额定电压除根3。126及以上kpp=1.3的为2.0倍用户输入额定电压除根3。 p.u."
+                  }
+                ]
+              },
+              {
+                "name": "条件/规则",
+                "children": [
+                  {
+                    "name": "规则: t3、td、t'为范围值时的试验约束 | 额定电压126kV及以上 | td_min=2μs; td_max=73μs; t'_min=52μs; t'_max=559μs; t2_t3_min=200μs; t2_t3_max=2544μs"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV及以上且kpp=2.0 | table_ref=表23; open_rows=6"
+                  },
+                  {
+                    "name": "规则: 失步角覆盖范围（OP2） | 额定电压大于800kV | asymmetry_angle_covered = 115°"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV及以上且kpp=2.5 | table_ref=表22; open_rows=1"
+                  },
+                  {
+                    "name": "规则: OP2试验TRV计算规则 | 试验方式为OP2 | close_rows=3, open_rows=3, fracture_rows=0"
+                  },
+                  {
+                    "name": "规则: 中性点接地条件 | 额定电压126kV以上 | neutral_grounding = effective"
+                  },
+                  {
+                    "name": "规则: 高压系统失步相角 | 额定电压 > 800kV | 失步相角 ≈ 115°"
+                  },
+                  {
+                    "name": "规则: OP1和OP2的TRV表示方法 | 对于OP1和OP2试验方式 | TRV由四参数法更改为两参数法表示"
+                  },
+                  {
+                    "name": "规则: 有效接地系统失步相角 | 额定电压 ≤ 800kV | 失步相角 ≈ 105°"
+                  },
+                  {
+                    "name": "规则: OP2外施电压值（中性点非有效接地） | 中性点非有效接地系统 | 外施电压 = 2.5ur/√3（经制造厂同意）"
+                  },
+                  {
+                    "name": "规则: OP2外施电压值 | 中性点有效接地系统 | 外施电压 = 2ur/√3"
+                  },
+                  {
+                    "name": "规则: OP1/OP2试验方式与电流百分数对应表 | OP1: 30% 额定失步开断电流；OP2: 100% 额定失步开断电流"
+                  },
+                  {
+                    "name": "规则: 适用频率范围 | 频率 50Hz 及以下 | test_frequency <= 50"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV以下且S1级断路器 | table_ref=表20; open_rows=6"
+                  },
+                  {
+                    "name": "规则: OP2关合相角范围 | 关合应发生在外施电压峰值的±15°内"
+                  },
+                  {
+                    "name": "规则: 适用电压范围 | 电压 3kV 及以上 | rated_voltage >= 3000"
+                  },
+                  {
+                    "name": "规则: 试验时间间隔强制值 | 关合-开断试验 | t_min = 0.3s"
+                  },
+                  {
+                    "name": "规则: 非有效接地系统失步相角 | 中性点非有效接地系统 | 失步相角 ≈ 115°"
+                  },
+                  {
+                    "name": "规则: 首开极系数kpp默认值 | 额定电压126kV以下 | kpp = 2.5"
+                  },
+                  {
+                    "name": "规则: 失步电压系数（中性点非有效接地） | 中性点非有效接地系统 | 失步电压系数 = 2.5"
+                  },
+                  {
+                    "name": "规则: 失步电压系数与系统接地方式 | 中性点有效接地系统 | 失步电压系数 = 2.0"
+                  },
+                  {
+                    "name": "规则: OP2关合电流可降低条件 | 预击穿时间 ≤ 1/2工频周波 | 关合电流可降低至≥1kA"
+                  },
+                  {
+                    "name": "规则: 首开极系数kpp默认值 | 额定电压126kV及以上 | kpp = 2.0"
+                  },
+                  {
+                    "name": "规则: TRV参数来源表20-23 | 额定电压126kV以下且S2级断路器 | table_ref=表21; open_rows=6"
+                  },
+                  {
+                    "name": "规则: OP2开断电流直流分量限值 | 开断电流直流分量百分数 < 20% 交流分量"
+                  },
+                  {
+                    "name": "规则: 试验时间间隔上限 | 试验间隔超过10min | must_report_reason_for_delay"
+                  },
+                  {
+                    "name": "规则: 首开极系数为1.5的默认值 | 所有试验方式 | kpp_default = 1.5"
+                  },
+                  {
+                    "name": "规则: OP2操作循环替代条件 | 预击穿时间 ≤ 1/4工频周波（±20%） | 允许替代为 C（全电压）→ CO（空载）"
+                  }
+                ]
+              },
+              {
+                "name": "原文切块",
+                "children": [
+                  {
+                    "name": "本标准规定了高压交流开关设备和控制设备的术语和定义、使用条件、额定值、设计与结构、型式试验和出厂试验等要求。\n\n本标准适用于设计安装在户内或户外且运行在电压 $3\\mathrm{kV}$ 及以上、频率 $50\\mathrm{Hz}$ 及以下的电力系统"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

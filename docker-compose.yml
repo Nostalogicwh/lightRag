@@ -1,0 +1,28 @@
+services:
+  lightrag:
+    container_name: lightrag
+    image: ghcr.io/hkuds/lightrag:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - ghcr.io/hkuds/lightrag:latest
+    ports:
+      - "${PORT:-9621}:9621"
+    volumes:
+      - ./lightrag/prompt.py:/app/lightrag/prompt.py
+      - ./lightrag/operate.py:/app/lightrag/operate.py
+      - ./lightrag/config/annotation_memory.json:/app/lightrag/config/annotation_memory.json
+      - ./lightrag/utils_graph.py:/app/lightrag/utils_graph.py
+      - ./lightrag/lightrag.py:/app/lightrag/lightrag.py
+      - ./lightrag/api/config.py:/app/lightrag/api/config.py
+      - ./lightrag/api/routers/document_routes.py:/app/lightrag/api/routers/document_routes.py
+      - ./data/rag_storage:/app/data/rag_storage
+      - ./data/inputs:/app/data/inputs
+      - ./config.ini:/app/config.ini
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
