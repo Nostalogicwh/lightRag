@@ -17,8 +17,7 @@ services:
       - ./lightrag/lightrag.py:/app/lightrag/lightrag.py
       - ./lightrag/api/config.py:/app/lightrag/api/config.py
       - ./lightrag/api/routers/document_routes.py:/app/lightrag/api/routers/document_routes.py
-      - ./data/rag_storage:/app/data/rag_storage
-      - ./data/inputs:/app/data/inputs
+      - ./data:/app/data
       - ./config.ini:/app/config.ini
       - ./tools/clean_annotation_memory.py:/app/tools/clean_annotation_memory.py
       - ./.env:/app/.env
@@ -27,4 +26,3 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
