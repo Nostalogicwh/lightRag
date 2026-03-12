@@ -120,16 +120,16 @@
       "skip": false,
       "note": "",
       "parameters": [
-        {
-          "param_name": "预加电压",
-          "value_text": "用户输入的额定工频耐受电压值",
-          "value_expr": "用户输入的额定工频耐受电压值",
-          "value_source": "user_input",
-          "value_type": "user_input",
-          "constraints": "用户输入的额定工频耐受电压值",
-          "calc_rule": "",
-          "derive_from_rated": "用户输入的额定工频耐受电压值"
-        },
+          {
+            "param_name": "预加电压",
+            "value_text": "40.5kV及以下是用户输入的额定电压的1.3倍",
+            "value_expr": "40.5kV及以下是用户输入的额定电压的1.3倍",
+            "value_source": "user_input",
+            "value_type": "user_input",
+            "constraints": "40.5kV及以下是用户输入的额定电压的1.3倍",
+            "calc_rule": "",
+            "derive_from_rated": "40.5kV及以下是用户输入的额定电压的1.3倍"
+          },
         {
           "param_name": "额定电压",
           "value_text": "额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。",
@@ -140,16 +140,16 @@
           "calc_rule": "",
           "derive_from_rated": ""
         },
-        {
-          "param_name": "预加时间",
-          "value_text": "1 min",
-          "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "1 min",
-          "calc_rule": "",
-          "derive_from_rated": ""
-        },
+          {
+            "param_name": "预加时间",
+            "value_text": "60s",
+            "value_expr": "",
+            "value_source": "standard",
+            "value_type": "standard",
+            "constraints": "60s",
+            "calc_rule": "",
+            "derive_from_rated": ""
+          },
         {
           "param_name": "交流电压",
           "value_text": "70.5kV及以上按GB1984-2024表7并按断路器结构确定，40.5kV及以下按照1.1倍额定电压",
@@ -227,16 +227,16 @@
       "skip": false,
       "note": "",
       "parameters": [
-        {
-          "param_name": "试验次数",
-          "value_text": "1",
-          "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "1",
-          "calc_rule": "",
-          "derive_from_rated": ""
-        },
+      {
+        "param_name": "试验次数",
+        "value_text": "1次",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "1次",
+        "calc_rule": "",
+        "derive_from_rated": ""
+      },
         {
           "param_name": "试验时间",
           "value_text": "1min",
@@ -247,13 +247,13 @@
           "calc_rule": "",
           "derive_from_rated": ""
         },
-        {
-          "param_name": "试验电压",
-          "value_text": "2 kV",
-          "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "2 kV",
+      {
+        "param_name": "交流电压",
+        "value_text": "2 kV",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "2 kV",
           "calc_rule": "",
           "derive_from_rated": ""
         }
@@ -274,16 +274,16 @@
       "skip": false,
       "note": "",
       "parameters": [
-        {
-          "param_name": "试验次数",
-          "value_text": "1",
-          "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "1",
-          "calc_rule": "",
-          "derive_from_rated": ""
-        },
+      {
+        "param_name": "试验次数",
+        "value_text": "1次",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "1次",
+        "calc_rule": "",
+        "derive_from_rated": ""
+      },
         {
           "param_name": "试验时间",
           "value_text": "1min",
@@ -294,13 +294,13 @@
           "calc_rule": "",
           "derive_from_rated": ""
         },
-        {
-          "param_name": "试验电压",
-          "value_text": "2 kV",
-          "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "2 kV",
+      {
+        "param_name": "交流电压",
+        "value_text": "2 kV",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "2 kV",
           "calc_rule": "",
           "derive_from_rated": ""
         }
@@ -11932,16 +11932,16 @@
         "skip": false,
         "note": "",
         "parameters": [
-          {
-            "param_name": "预加电压",
-            "value_text": "用户输入的额定工频耐受电压值",
-            "value_expr": "用户输入的额定工频耐受电压值",
-            "value_source": "user_input",
-            "value_type": "user_input",
-            "constraints": "用户输入的额定工频耐受电压值",
-            "calc_rule": "",
-            "derive_from_rated": "用户输入的额定工频耐受电压值"
-          },
+      {
+        "param_name": "预加电压",
+        "value_text": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "value_expr": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "value_source": "user_input",
+        "value_type": "user_input",
+        "constraints": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "calc_rule": "",
+        "derive_from_rated": "40.5kV及以下是用户输入的额定电压的1.3倍"
+      },
           {
             "param_name": "额定电压",
             "value_text": "额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。",
@@ -11952,16 +11952,16 @@
             "calc_rule": "",
             "derive_from_rated": ""
           },
-          {
-            "param_name": "预加时间",
-            "value_text": "1 min",
-            "value_expr": "",
-            "value_source": "standard",
-            "value_type": "standard",
-            "constraints": "1 min",
-            "calc_rule": "",
-            "derive_from_rated": ""
-          },
+      {
+        "param_name": "预加时间",
+        "value_text": "60s",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "60s",
+        "calc_rule": "",
+        "derive_from_rated": ""
+      },
           {
             "param_name": "交流电压",
             "value_text": "70.5kV及以上按GB1984-2024表7并按断路器结构确定，40.5kV及以下按照1.1倍额定电压",
@@ -12039,16 +12039,16 @@
         "skip": false,
         "note": "",
         "parameters": [
-          {
-            "param_name": "预加电压",
-            "value_text": "用户输入的额定工频耐受电压值",
-            "value_expr": "用户输入的额定工频耐受电压值",
-            "value_source": "user_input",
-            "value_type": "user_input",
-            "constraints": "用户输入的额定工频耐受电压值",
-            "calc_rule": "",
-            "derive_from_rated": "用户输入的额定工频耐受电压值"
-          },
+      {
+        "param_name": "预加电压",
+        "value_text": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "value_expr": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "value_source": "user_input",
+        "value_type": "user_input",
+        "constraints": "40.5kV及以下是用户输入的额定电压的1.3倍",
+        "calc_rule": "",
+        "derive_from_rated": "40.5kV及以下是用户输入的额定电压的1.3倍"
+      },
           {
             "param_name": "额定电压",
             "value_text": "额定电压范围I：3.6、7.2、12、24、40.5、72.5、126、252 kV；额定电压范围II：363、550、800、1100 kV。",
@@ -12059,16 +12059,16 @@
             "calc_rule": "",
             "derive_from_rated": ""
           },
-          {
-            "param_name": "预加时间",
-            "value_text": "1 min",
-            "value_expr": "",
-            "value_source": "standard",
-            "value_type": "standard",
-            "constraints": "1 min",
-            "calc_rule": "",
-            "derive_from_rated": ""
-          },
+      {
+        "param_name": "预加时间",
+        "value_text": "60s",
+        "value_expr": "",
+        "value_source": "standard",
+        "value_type": "standard",
+        "constraints": "60s",
+        "calc_rule": "",
+        "derive_from_rated": ""
+      },
           {
             "param_name": "交流电压",
             "value_text": "70.5kV及以上按GB1984-2024表7并按断路器结构确定，40.5kV及以下按照1.1倍额定电压",
@@ -12150,11 +12150,11 @@
         "parameters": [
           {
             "param_name": "试验次数",
-            "value_text": "1",
+            "value_text": "1次",
             "value_expr": "",
             "value_source": "standard",
             "value_type": "standard",
-            "constraints": "1",
+            "constraints": "1次",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -12169,7 +12169,7 @@
             "derive_from_rated": ""
           },
           {
-            "param_name": "试验电压",
+            "param_name": "交流电压",
             "value_text": "2 kV",
             "value_expr": "",
             "value_source": "standard",
@@ -12197,11 +12197,11 @@
         "parameters": [
           {
             "param_name": "试验次数",
-            "value_text": "1",
+            "value_text": "1次",
             "value_expr": "",
             "value_source": "standard",
             "value_type": "standard",
-            "constraints": "1",
+            "constraints": "1次",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -12216,7 +12216,7 @@
             "derive_from_rated": ""
           },
           {
-            "param_name": "试验电压",
+            "param_name": "交流电压",
             "value_text": "2 kV",
             "value_expr": "",
             "value_source": "standard",
@@ -24043,21 +24043,62 @@
       "rules": []
     },
     {
-      "test_item": "试前及试后空载特性测量",
-      "category": "开合性能型式试验",
-      "report_type": "开合性能型式试验",
+      "test_item": "空载特性测量",
+      "category": "短路性能型式试验",
+      "report_type": "短路性能型式试验",
       "aliases": [],
       "acceptance_criteria": "",
-      "note": "from 20260306_144334 user annotation",
+      "note": "缺空载特性测量，特征值包含试验次数(1，默认1次)、额定电压(用户输入的额定电压)、试验部位(断口)、交流电压(用户录入额定短时工频耐受电压(断口)80%，如果没有输入工频耐受电压(断口)，则按工频耐受电压80%)",
       "confidence": 1.0,
       "required_reports": [
         {
-          "report_type": "开合性能型式试验",
+          "report_type": "短路性能型式试验",
           "is_required": true,
           "condition": ""
         }
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "param_name": "试验次数",
+          "value_text": "1次",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "1次",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "额定电压",
+          "value_text": "用户输入的额定电压",
+          "value_expr": "用户输入的额定电压",
+          "value_source": "user_input",
+          "value_type": "user_input",
+          "constraints": "用户输入的额定电压",
+          "calc_rule": "",
+          "derive_from_rated": "用户输入的额定电压"
+        },
+        {
+          "param_name": "试验部位",
+          "value_text": "断口",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "断口",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "交流电压",
+          "value_text": "用户录入额定短时工频耐受电压(断口)80%，如果没有输入工频耐受电压(断口)，则按工频耐受电压80%",
+          "value_expr": "",
+          "value_source": "formula",
+          "value_type": "formula",
+          "constraints": "用户录入额定短时工频耐受电压(断口)80%，如果没有输入工频耐受电压(断口)，则按工频耐受电压80%",
+          "calc_rule": "用户录入额定短时工频耐受电压(断口)80%，如果没有输入工频耐受电压(断口)，则按工频耐受电压80%",
+          "derive_from_rated": ""
+        }
+      ],
       "rules": []
     },
     {
@@ -24320,6 +24361,144 @@
           "value_source": "default",
           "value_type": "default",
           "constraints": "用户输入，未输入默认实测",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "试验次数",
+          "value_text": "1",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "1",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        }
+      ],
+      "rules": []
+    },
+    {
+      "test_item": "作为状态检查的工频耐受电压试验",
+      "category": "短路性能型式试验",
+      "report_type": "短路性能型式试验",
+      "aliases": [],
+      "acceptance_criteria": "",
+      "note": "缺作为状态检查的工频耐受电压试验，试验时间(1min)、试验相数(40.5kV及以下默认为三相)、介质性质(正常或充气充油，默认正常)、正常次数(1)",
+      "confidence": 1.0,
+      "required_reports": [
+        {
+          "report_type": "短路性能型式试验",
+          "is_required": true,
+          "condition": ""
+        }
+      ],
+      "parameters": [
+        {
+          "param_name": "试验时间",
+          "value_text": "1min",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "1min",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "试验相数",
+          "value_text": "40.5kV及以下默认为三相",
+          "value_expr": "40.5kV及以下默认为三相",
+          "value_source": "default",
+          "value_type": "default",
+          "constraints": "40.5kV及以下默认为三相",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "介质性质",
+          "value_text": "正常或充气充油，默认正常",
+          "value_expr": "正常或充气充油，默认正常",
+          "value_source": "default",
+          "value_type": "default",
+          "constraints": "正常或充气充油，默认正常",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "正常次数",
+          "value_text": "1",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "1",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        }
+      ],
+      "rules": []
+    },
+    {
+      "test_item": "作为状态检查的T10试验",
+      "category": "短路性能型式试验",
+      "report_type": "短路性能型式试验",
+      "aliases": [],
+      "acceptance_criteria": "",
+      "note": "缺作为状态检查的T10试验，额定电压(用户输入的额定电压)、试验电压(50%额定电压)、试验电流kA(10%的额定短路开断电流)、试验相数(40.5kV及以下默认为三相)、操作顺序(O)、试验次数(1)",
+      "confidence": 1.0,
+      "required_reports": [
+        {
+          "report_type": "短路性能型式试验",
+          "is_required": true,
+          "condition": ""
+        }
+      ],
+      "parameters": [
+        {
+          "param_name": "额定电压",
+          "value_text": "用户输入的额定电压",
+          "value_expr": "用户输入的额定电压",
+          "value_source": "user_input",
+          "value_type": "user_input",
+          "constraints": "用户输入的额定电压",
+          "calc_rule": "",
+          "derive_from_rated": "用户输入的额定电压"
+        },
+        {
+          "param_name": "试验电压",
+          "value_text": "50%额定电压",
+          "value_expr": "",
+          "value_source": "formula",
+          "value_type": "formula",
+          "constraints": "50%额定电压",
+          "calc_rule": "50%额定电压",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "试验电流kA",
+          "value_text": "10%的额定短路开断电流",
+          "value_expr": "",
+          "value_source": "formula",
+          "value_type": "formula",
+          "constraints": "10%的额定短路开断电流",
+          "calc_rule": "10%的额定短路开断电流",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "试验相数",
+          "value_text": "40.5kV及以下默认为三相",
+          "value_expr": "40.5kV及以下默认为三相",
+          "value_source": "default",
+          "value_type": "default",
+          "constraints": "40.5kV及以下默认为三相",
+          "calc_rule": "",
+          "derive_from_rated": ""
+        },
+        {
+          "param_name": "操作顺序",
+          "value_text": "O",
+          "value_expr": "",
+          "value_source": "standard",
+          "value_type": "standard",
+          "constraints": "O",
           "calc_rule": "",
           "derive_from_rated": ""
         },
