@@ -6549,6 +6549,75 @@ async def kg_query(
         # Apply higher priority (5) to query relation LLM function
         use_model_func = partial(use_model_func, _priority=5)
 
+    def _extract_calculation_result_value(line: str) -> str | None:
+        if "calculation" not in line.lower():
+            return None
+        normalized = line.replace("：", ":")
+        calc_match = re.search(
+            r"calculation\s*:\s*(.+)$", normalized, flags=re.IGNORECASE
+        )
+        if not calc_match:
+            return None
+        calc_body = calc_match.group(1).strip()
+        if "=" not in calc_body:
+            return None
+        rhs = calc_body.rsplit("=", 1)[-1].strip()
+        rhs = re.split(r"[；;（(。,\n]", rhs, maxsplit=1)[0].strip()
+        if not rhs:
+            return None
+        value_match = re.match(
+            r"^(?:≤|≥|<|>)?\s*-?\d+(?:\.\d+)?\s*(?:kV|V|mV|A|kA|s|min|ms|pC|%|m)?$",
+            rhs,
+            flags=re.IGNORECASE,
+        )
+        return rhs if value_match else None
+
+    def _normalize_value_for_compare(value: str) -> str:
+        return (
+            value.replace(" ", "")
+            .replace("：", ":")
+            .replace("（", "(")
+            .replace("）", ")")
+            .strip()
+            .lower()
+        )
+
+    def _enforce_formula_consistency(response_text: str) -> str:
+        if not response_text or "calculation" not in response_text.lower():
+            return response_text
+
+        corrected_lines: list[str] = []
+        corrected_count = 0
+
+        for line in response_text.splitlines():
+            if "calculation" not in line.lower():
+                corrected_lines.append(line)
+                continue
+
+            calc_value = _extract_calculation_result_value(line)
+            param_match = re.match(r"^(\s*-\s*[^：:\n]+[：:]\s*)([^；;\n]+)(.*)$", line)
+            if not calc_value or not param_match:
+                corrected_lines.append(line)
+                continue
+
+            prefix, current_value, suffix = param_match.groups()
+            if _normalize_value_for_compare(current_value) == _normalize_value_for_compare(
+                calc_value
+            ):
+                corrected_lines.append(line)
+                continue
+
+            corrected_lines.append(f"{prefix}{calc_value}{suffix}")
+            corrected_count += 1
+
+        if corrected_count:
+            logger.info(
+                "Corrected %s formula-derived parameter value(s) to match calculation result",
+                corrected_count,
+            )
+
+        return "\n".join(corrected_lines)
+
     hl_keywords, ll_keywords = await get_keywords_from_query(
         query, query_param, global_config, hashing_kv
     )
@@ -7658,8 +7727,38 @@ async def _build_context_str(
             for pattern in family_patterns.get(family, [])
         )
 
+    def _extract_model_prefix(query_text: str) -> str | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        match = re.search(r"型号名称\s*[：:]\s*([A-Za-z0-9]+)", text)
+        return match.group(1).upper() if match else None
+
+    def _extract_rated_current_amp(query_text: str) -> int | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        match = re.search(r"额定电流\s*([0-9]+)\s*A\b", text, flags=re.IGNORECASE)
+        return int(match.group(1)) if match else None
+
+    def _query_has_explicit_solid_sealed_pole(query_text: str) -> bool:
+        text = str(query_text or "").strip()
+        if not text:
+            return False
+        return bool(re.search(r"元件中含固封极柱", text))
+
     fracture_pf_provided = _query_has_explicit_fracture_param(query, "pf")
     fracture_li_provided = _query_has_explicit_fracture_param(query, "li")
+    model_prefix = _extract_model_prefix(query)
+    rated_current_amp = _extract_rated_current_amp(query)
+    explicit_solid_sealed_pole = _query_has_explicit_solid_sealed_pole(query)
+
+    pd_allowed_by_model = bool(
+        model_prefix
+        and model_prefix != "VF1"
+        and rated_current_amp == 4000
+    )
+    pd_allowed = explicit_solid_sealed_pole or pd_allowed_by_model
 
     auto_query_instructions: list[str] = []
     if not fracture_pf_provided:
@@ -7669,6 +7768,19 @@ async def _build_context_str(
     if not fracture_li_provided:
         auto_query_instructions.append(
             "系统约束：用户未提供额定雷电冲击耐受电压(断口)或同义断口雷电参数，禁止输出`雷电冲击耐受电压试验(断口)`与`雷电冲击耐受电压试验(相间及对地)`拆分项目；只能输出未拆分的`雷电冲击耐受电压试验`。"
+        )
+    if pd_allowed:
+        if explicit_solid_sealed_pole:
+            auto_query_instructions.append(
+                "系统约束：用户已明确提供`元件中含固封极柱`，允许输出`局部放电试验`。"
+            )
+        else:
+            auto_query_instructions.append(
+                "系统约束：仅因型号前缀不是`VF1`且额定电流精确等于`4000A`，允许按业务规则输出`局部放电试验`；不得将`3150A`、`2500A`、`2000A`、`1600A`、`1250A`、`630A`或“接近4000A”视为命中。"
+            )
+    else:
+        auto_query_instructions.append(
+            "系统约束：禁止输出`局部放电试验`。只有两种情况允许输出：1) 用户明确提供`元件中含固封极柱`；2) 型号前缀不是`VF1`且额定电流精确等于`4000A`。`固封式`、`真空断路器`、`真空灭弧室`、`户内高压真空断路器`、`接近4000A`、`3150A`等都不能触发局部放电试验。"
         )
     if auto_query_instructions:
         auto_instruction_block = "System-Enforced Query Constraints:\n" + "\n".join(
@@ -8086,6 +8198,9 @@ async def _build_context_str(
     final_data["metadata"]["project_split_rules"] = {
         "pf_fracture_enabled": fracture_pf_provided,
         "li_fracture_enabled": fracture_li_provided,
+        "partial_discharge_enabled": pd_allowed,
+        "partial_discharge_by_explicit_solid_sealed_pole": explicit_solid_sealed_pole,
+        "partial_discharge_by_model_rule": pd_allowed_by_model,
     }
     logger.debug(
         f"[_build_context_str] Final data after conversion: {len(final_data.get('entities', []))} entities, {len(final_data.get('relationships', []))} relationships, {len(final_data.get('chunks', []))} chunks"
@@ -9048,6 +9163,8 @@ async def naive_query(
                 .replace("</system>", "")
                 .strip()
             )
+
+        response = _enforce_formula_consistency(response)
 
         return QueryResult(content=response, raw_data=raw_data)
     else:

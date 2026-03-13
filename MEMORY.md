@@ -1270,3 +1270,263 @@ Timestamp: 2026-03-11 20:14:14 CST
 - Therefore any future tree UI must identify roots by structure:
   - “has `INCLUDES_TEST` outgoing edges”
   - not merely by report label text.
+
+---
+
+## Conversation Memory (2026-03-12, Annotation Memory Profiles)
+
+## Context
+- User decided to maintain three separate controlled-KG profiles for standards:
+  - `GB`
+  - `IEC`
+  - `DLT`
+- Requirement:
+  - keep the same graph structure and the same core `test_items` / `param_map` / `test_item_param_requirements`,
+  - but allow each standard family to accumulate its own `annotation_memory` notes and overrides.
+
+## Current Profile Design
+- Config templates:
+  - `config/profiles/config.gb.ini`
+  - `config/profiles/config.iec.ini`
+  - `config/profiles/config.dlt.ini`
+- Memory templates:
+  - `lightrag/config/profiles/annotation_memory.gb.json`
+  - `lightrag/config/profiles/annotation_memory.iec.json`
+  - `lightrag/config/profiles/annotation_memory.dlt.json`
+- Runtime switching script:
+  - `tools/activate_profile.sh <gb|iec|dlt>`
+
+## How Profile Switching Works
+- `activate_profile.sh` performs three actions:
+  1. copy selected `config.<profile>.ini` to active `config.ini`
+  2. copy selected `annotation_memory.<profile>.json` to active `lightrag/config/annotation_memory.json`
+  3. rewrite `.env` `WORKING_DIR=./data/rag_storage_<profile>`
+- Working directories are separated:
+  - `./data/rag_storage_gb`
+  - `./data/rag_storage_iec`
+  - `./data/rag_storage_dlt`
+
+## Current Memory Path Strategy
+- The profile configs currently point to profile-specific paths:
+  - `config.gb.ini -> annotation_memory_path = lightrag/config/profiles/annotation_memory.gb.json`
+  - `config.iec.ini -> annotation_memory_path = lightrag/config/profiles/annotation_memory.iec.json`
+  - `config.dlt.ini -> annotation_memory_path = lightrag/config/profiles/annotation_memory.dlt.json`
+- Therefore, when using Docker, mounting only active `annotation_memory.json` is not sufficient.
+- Docker must also mount the whole profile directory:
+  - `./lightrag/config/profiles:/app/lightrag/config/profiles`
+
+## Docker Notes
+- `docker-compose.yml` was updated to:
+  - mount `./data:/app/data`
+  - mount `./lightrag/config/profiles:/app/lightrag/config/profiles`
+- This was necessary because otherwise the container could keep reading stale profile memory files from the image, even after `activate_profile.sh` changed host files.
+- In the current profile-path design, the single-file mount:
+  - `./lightrag/config/annotation_memory.json:/app/lightrag/config/annotation_memory.json`
+  is largely redundant for GB/IEC/DLT profile runtime, because the active config points to `profiles/...`.
+
+## Strong Override Policy
+- All three profiles are currently configured in strong override mode:
+  - `enforce_param_whitelist = true`
+  - `annotation_guardrail_mode = true`
+  - `annotation_guardrail_only_override = true`
+  - `strict_tree_override_match = true`
+  - `override_param_filter_to_template = true`
+- Meaning:
+  - `annotation_memory` strongly influences final test items and parameters,
+  - it is not only a post-hoc note file, but a runtime correction / 补项 / 删项 / 模板约束 source.
+
+## Current Content State of the Three Memory Files
+- `annotation_memory.gb.json` is the main curated GB memory.
+- `annotation_memory.iec.json` and `annotation_memory.dlt.json` were initially filled using GB memory as baseline, so IEC/DLT can start under strong constraints before protocol-specific notes are accumulated.
+- User later confirmed the three memory files must remain separate, because different standards will accumulate different remarks and corrections.
+
+## DLT Runtime Finding Preserved
+- A DLT export (`electrical_test_tree_20260312_163612.json`) showed values that clearly did not reflect the latest host `annotation_memory.dlt.json`.
+- Example:
+  - DLT tree `局部放电试验` still showed raw DLT-extracted values like `≤3 pC`,
+  - while current `annotation_memory.dlt.json` contained GB-baseline override values like `10 pC`, `60s`, and `1.1倍额定电压`.
+- This strongly suggested the runtime container was not reading the latest host profile memory file before the compose mount fix.
+
+## Key Operational Reminder
+- Correct order when switching profiles:
+  1. `tools/activate_profile.sh <gb|iec|dlt>`
+  2. `docker compose down`
+  3. `docker compose up -d`
+- If the user changes only host profile files but does not restart compose, container behavior may still reflect old runtime state.
+
+---
+
+## Conversation Memory (2026-03-12, UserPrompt Current Rules)
+
+## Context
+- User is using `UserPrompt.md` as the current QA user prompt for electrical test-plan generation.
+- Main issue in this round:
+  - model over-outputting cross-domain projects,
+  - especially in questions that only ask for `绝缘性能型式试验`.
+- Representative wrong outputs previously included:
+  - `局部放电试验`
+  - `电寿命试验`
+  - `容性电流开断试验(CC2)`
+  even when current task scope should not include them.
+
+## Current Prompt Design Direction
+- Prompt is now treated as a strong rule executor, not a free-form answer generator.
+- User explicitly wants:
+  - no free play,
+  - strong project gating,
+  - fixed graph-aligned structure,
+  - project applicability first, parameter resolution second.
+
+## Important Additions Made to UserPrompt
+
+### 1) Current task scope gate
+- Added `CurrentReportScope` concept:
+  - if user explicitly asks for `绝缘性能型式试验 / 温升性能型式试验 / 开合性能型式试验 / 短路性能型式试验`,
+  - only projects belonging to that scope may appear in output.
+- Scope gate has higher priority than project-level trigger conditions.
+
+### 2) Domain-project whitelist was explicitly written into prompt
+- User provided curated mapping of report domain -> allowed test items.
+- This mapping was added into `UserPrompt.md` as a highest-priority whitelist:
+  - `绝缘性能型式试验`:
+    - 工频耐受电压试验
+    - 工频耐受电压试验(断口)
+    - 工频耐受电压试验(相间及对地)
+    - 雷电冲击耐受电压试验
+    - 雷电冲击耐受电压试验(断口)
+    - 雷电冲击耐受电压试验(相间及对地)
+    - 控制和辅助回路的绝缘试验
+    - 操作冲击耐受电压试验
+    - 局部放电试验
+  - `温升性能型式试验`:
+    - 前后回路电阻测量试验
+    - 辅助和控制回路温升试验
+    - 连续电流试验
+  - `开合性能型式试验`:
+    - 容性电流开断试验(LC1)
+    - 容性电流开断试验(LC2)
+    - 容性电流开断试验(CC1)
+    - T60(预备试验)
+    - 容性电流开断试验(CC2)
+    - 容性电流开断试验(BC1)
+    - 容性电流开断试验(BC2)
+  - `短路性能型式试验`:
+    - 短时耐受电流试验
+    - 峰值耐受电流试验
+    - 空载特性测量
+    - 空载特性测量（前）
+    - 空载特性测量（后）
+    - 短路开断试验(T100s)
+    - 作为状态检查的T10试验
+    - 短路开断试验(T10)
+    - 失步关合和开断试验(OP2)
+    - 电寿命试验
+    - 作为状态检查的工频耐受电压试验
+    - 单相接地故障试验
+    - 异相接地故障试验
+    - 短路开断试验(T30)
+    - 短路开断试验(T60)
+    - 短路开断试验(T100a)
+    - 近区故障试验(L90)
+    - 近区故障试验(L75)
+    - 失步关合和开断试验(OP1)
+- Prompt now states:
+  - if a project is not in the whitelist for current scope, it must not appear in A/B/C/D,
+  - even if user input could trigger it.
+
+### 3) PROJECT_PARAM_MAP usage clarified
+- Prompt now explicitly says:
+  - `PROJECT_PARAM_MAP` is only for constraining parameters of already-applicable projects,
+  - it must not be used as evidence that a project is applicable.
+- This was added because the model had previously used presence of graph params to justify output of projects like `局部放电试验`.
+
+### 4) 局部放电试验 gate strengthened
+- Prompt now requires explicit structure evidence before outputting `局部放电试验`:
+  - user explicitly says gas-insulated breaker, or
+  - user explicitly says solid-sealed pole, or
+  - retrieved/user-provided standard text explicitly proves PD-test-applicable structure.
+- Also explicitly states:
+  - `真空断路器`
+  - `真空灭弧室`
+  - `户内高压真空断路器`
+  are not enough to trigger PD test.
+- Also explicitly states:
+  - `40.5kV及以下`
+  - project presence in `PROJECT_PARAM_MAP`
+  - graph having PD parameters
+  cannot by themselves justify PD test applicability.
+
+### 5) 电寿命试验 scope clarified
+- Prompt now explicitly states:
+  - `电寿命试验` only belongs to `短路性能型式试验`
+  - only if `CurrentReportScope` includes `短路性能型式试验` and user/input evidence hits `E2`, then output it
+  - if current scope does not include short-circuit type test, do not output `电寿命试验`
+
+### 6) Short-circuit sequencing rules added
+- User requested two new short-circuit rules and they were written into prompt:
+  1. In `短路性能型式试验`, must output:
+     - `空载特性测量（前）` at sequence start
+     - `空载特性测量（后）` at sequence end
+     - both exactly once
+  2. `作为状态检查的T10试验` may be output only when all are true:
+     - current scope includes `短路性能型式试验`
+     - components include `真空灭弧室`
+     - user explicitly provides `SF6气体的最低功能压力(20℃表压)`
+     - and if output, it must be placed before `空载特性测量（后）`
+
+### 7) Insulation test split/state rules added
+- User requested controlled split rules for withstand-voltage projects:
+  - if user provides `额定工频耐受电压（断口）`,
+    split `工频耐受电压试验` into:
+    - `工频耐受电压试验(断口)`
+    - `工频耐受电压试验(相间及对地)`
+  - if user provides `额定雷电冲击耐受电压（断口）`,
+    split `雷电冲击耐受电压试验` into:
+    - `雷电冲击耐受电压试验(断口)`
+    - `雷电冲击耐受电压试验(相间及对地)`
+- For both split families:
+  - original unsplit project name must disappear
+  - the two split projects inherit all parameters from original project
+  - only `试验部位` differs:
+    - `开关断口`
+    - `相间及对地`
+- Added `工频耐受电压试验` state rule:
+  - if user input clearly indicates outdoor breaker -> `试验状态 = 湿`
+  - otherwise / indoor breaker -> `试验状态 = 干`
+
+### 8) Output self-check expanded
+- Prompt self-check now also verifies:
+  - all output projects belong to current scope whitelist
+  - short-circuit sequence positioning
+  - PF withstand split correctness
+  - LI withstand split correctness
+  - outdoor/indoor state handling for PF withstand
+
+## Important Practical Observation
+- Even after some earlier prompt tightening, model still leaked cross-domain projects.
+- Strong conclusion from this session:
+  - natural-language gating alone was not enough;
+  - explicit domain-project whitelist had to be embedded into `UserPrompt.md`.
+
+---
+
+## 2026-03-13 补充澄清：DLT 短路开断试验(T100a) 的直流分量公式
+
+- 用户特别强调：
+  - `短路开断试验(T100a) -> 直流分量`
+  - 不是普通文本值，必须按公式理解。
+- 公式口径应理解为：
+  - `直流分量 = e^(-((最短分闸时间 + 10ms@50Hz / 8.3ms@60Hz) / 时间常数τ))`
+- 更明确地说：
+  1. 先根据额定频率选择附加时间：
+     - `50Hz -> 10ms`
+     - `60Hz -> 8.3ms`
+  2. 分子为：
+     - `最短分闸时间 + 频率对应附加时间`
+  3. 再除以：
+     - `时间常数τ`
+  4. 最后取负指数：
+     - `e^(-x)`
+- 后续处理要求：
+  - 该字段应视为“公式计算值”，不是 `graph_final` 固定文本。
+  - 若缺少 `最短分闸时间`、`额定频率` 或 `时间常数τ`，应输出 `无法确定`，并明确说明缺失参数。
