@@ -584,6 +584,9 @@ class LightRAG:
                 "annotation_memory_path": section.get(
                     "annotation_memory_path", ""
                 ).strip(),
+                "electrical_rules_path": section.get(
+                    "electrical_rules_path", ""
+                ).strip(),
                 "annotation_source_json_paths": section.get(
                     "annotation_source_json_paths", ""
                 ).strip(),

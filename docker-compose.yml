@@ -14,6 +14,7 @@ services:
       - ./lightrag/operate.py:/app/lightrag/operate.py
       - ./lightrag/config/annotation_memory.json:/app/lightrag/config/annotation_memory.json
       - ./lightrag/config/profiles:/app/lightrag/config/profiles
+      - ./lightrag/config/domain_rules:/app/lightrag/config/domain_rules
       - ./lightrag/utils_graph.py:/app/lightrag/utils_graph.py
       - ./lightrag/lightrag.py:/app/lightrag/lightrag.py
       - ./lightrag/api/config.py:/app/lightrag/api/config.py
