@@ -2,6 +2,10 @@
 LightRAG FastAPI Server
 """
 
+# Load .env file first before any other imports
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=".env", override=False)
+
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -22,7 +26,6 @@ import configparser
 from ascii_colors import ASCIIColors
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 from lightrag.api.utils_api import (
     get_combined_auth_dependency,
     display_splash_screen,
@@ -63,12 +66,6 @@ from lightrag.kg.shared_storage import (
 )
 from fastapi.security import OAuth2PasswordRequestForm
 from lightrag.api.auth import auth_handler
-
-# use the .env that is inside the current folder
-# allows to use different .env file for each lightrag instance
-# the OS environment variables take precedence over the .env file
-load_dotenv(dotenv_path=".env", override=False)
-
 
 webui_title = os.getenv("WEBUI_TITLE")
 webui_description = os.getenv("WEBUI_DESCRIPTION")

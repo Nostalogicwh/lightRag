@@ -2816,6 +2816,7 @@ class LightRAG:
         query: str,
         param: QueryParam = QueryParam(),
         system_prompt: str | None = None,
+        parent_span=None,
     ) -> dict[str, Any]:
         """
         Asynchronous complete query API: returns structured retrieval results with LLM generation.
@@ -2827,6 +2828,7 @@ class LightRAG:
             query: Query text for retrieval and LLM generation.
             param: Query parameters controlling retrieval and LLM behavior.
             system_prompt: Optional custom system prompt for LLM generation.
+            parent_span: Optional parent Langfuse span for tracing.
 
         Returns:
             dict[str, Any]: Complete response with structured data and LLM response.
@@ -2850,6 +2852,7 @@ class LightRAG:
                     hashing_kv=self.llm_response_cache,
                     system_prompt=system_prompt,
                     chunks_vdb=self.chunks_vdb,
+                    parent_span=parent_span,
                 )
             elif param.mode == "naive":
                 query_result = await naive_query(
@@ -2931,6 +2934,7 @@ class LightRAG:
                 else None,
                 "is_streaming": query_result.is_streaming,
             }
+            raw_data["full_prompt"] = query_result.full_prompt
 
             return raw_data
 

@@ -855,12 +855,14 @@ class QueryResult:
         response_iterator: Streaming response iterator for streaming responses
         raw_data: Complete structured data including references and metadata
         is_streaming: Whether this is a streaming result
+        full_prompt: Complete prompt including system prompt and user query
     """
 
     content: Optional[str] = None
     response_iterator: Optional[AsyncIterator[str]] = None
     raw_data: Optional[Dict[str, Any]] = None
     is_streaming: bool = False
+    full_prompt: Optional[str] = None
 
     @property
     def reference_list(self) -> List[Dict[str, str]]:

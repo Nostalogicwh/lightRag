@@ -10,7 +10,6 @@ __pycache__/
 .venv/
 venv/
 
-
 # Build / Distribution
 dist/
 build/
@@ -35,7 +34,6 @@ temp/
 # IDE / Editor Files
 .idea/
 .vscode/
-.vscode/settings.json
 .github/
 .clinerules
 
@@ -71,14 +69,16 @@ download_models_hf.py
 
 # Cline files
 memory-bank
-.claude/CLAUDE.md
 .claude/
 
 # Claude Code
 CLAUDE.md
 
-  # local/dev
-  data/
-  .idea/
-  .github/
+# Environment files
 .env
+.env.local
+.env.*.local
+
+# Docker
+Dockerfile.local
+docker-compose*.local.yml

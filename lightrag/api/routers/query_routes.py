@@ -5,25 +5,37 @@ This module contains all query-related routes for the LightRAG API.
 import json
 import os
 from typing import Any, Dict, List, Literal, Optional
-from langfuse import observe, Langfuse
-
 from fastapi import APIRouter, Depends, HTTPException
 from dotenv import load_dotenv
-
 from lightrag.base import QueryParam
 from lightrag.api.utils_api import get_combined_auth_dependency
 from lightrag.utils import logger
 from pydantic import BaseModel, Field, field_validator
 
+# Load environment variables for Langfuse
 load_dotenv()
 
 router = APIRouter(tags=["query"])
 
-langfuse = Langfuse(
-    secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-    public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-    host=os.getenv("LANGFUSE_URL"),
-)
+# Initialize Langfuse client (will be None if env vars not set)
+langfuse = None
+try:
+    from langfuse import Langfuse
+    logger.info(f"[Langfuse] Checking env vars - PUBLIC_KEY: {bool(os.getenv('LANGFUSE_PUBLIC_KEY'))}, SECRET_KEY: {bool(os.getenv('LANGFUSE_SECRET_KEY'))}, HOST: {os.getenv('LANGFUSE_HOST')}")
+    if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
+        langfuse = Langfuse(
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            host=os.getenv("LANGFUSE_HOST") or os.getenv("LANGFUSE_URL"),
+        )
+        logger.info("[Langfuse] Client initialized successfully")
+    else:
+        logger.info("[Langfuse] Missing env vars, tracing disabled")
+except ImportError as e:
+    logger.info(f"[Langfuse] Import error: {e}, tracing disabled")
+except Exception as e:
+    logger.error(f"[Langfuse] Initialization error: {e}")
+
 
 class QueryRequest(BaseModel):
     query: str = Field(
@@ -465,7 +477,6 @@ def create_query_routes(rag, api_key: Optional[str] = None, top_k: int = 60):
             logger.error(f"Error processing query: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
 
-    @observe(name="queryStream")
     @router.post(
         "/query/stream",
         dependencies=[Depends(combined_auth)],
@@ -672,85 +683,141 @@ def create_query_routes(rag, api_key: Optional[str] = None, top_k: int = 60):
             This endpoint is ideal for applications requiring flexible response delivery.
             Use streaming mode for real-time interfaces and non-streaming for batch processing.
         """
-        try:
-            # Use the stream parameter from the request, defaulting to True if not specified
-            stream_mode = request.stream if request.stream is not None else True
-            param = request.to_query_params(stream_mode)
+        # Use the stream parameter from the request, defaulting to True if not specified
+        stream_mode = request.stream if request.stream is not None else True
+        param = request.to_query_params(stream_mode)
 
-            from fastapi.responses import StreamingResponse
+        from fastapi.responses import StreamingResponse
 
-            # Unified approach: always use aquery_llm for all cases
-            result = await rag.aquery_llm(request.query, param=param)
-
-            async def stream_generator():
-                # Extract references and LLM response from unified result
-                references = result.get("data", {}).get("references", [])
-                llm_response = result.get("llm_response", {})
-
-                # Enrich references with chunk content if requested
-                if request.include_references and request.include_chunk_content:
-                    data = result.get("data", {})
-                    chunks = data.get("chunks", [])
-                    # Create a mapping from reference_id to chunk content
-                    ref_id_to_content = {}
-                    for chunk in chunks:
-                        ref_id = chunk.get("reference_id", "")
-                        content = chunk.get("content", "")
-                        if ref_id and content:
-                            # Collect chunk content
-                            ref_id_to_content.setdefault(ref_id, []).append(content)
-
-                    # Add content to references
-                    enriched_references = []
-                    for ref in references:
-                        ref_copy = ref.copy()
-                        ref_id = ref.get("reference_id", "")
-                        if ref_id in ref_id_to_content:
-                            # Keep content as a list of chunks (one file may have multiple chunks)
-                            ref_copy["content"] = ref_id_to_content[ref_id]
-                        enriched_references.append(ref_copy)
-                    references = enriched_references
-
-                if llm_response.get("is_streaming"):
-                    # Streaming mode: send references first, then stream response chunks
-                    if request.include_references:
-                        yield f"{json.dumps({'references': references})}\n"
-
-                    response_stream = llm_response.get("response_iterator")
-                    if response_stream:
-                        try:
-                            async for chunk in response_stream:
-                                if chunk:  # Only send non-empty content
-                                    yield f"{json.dumps({'response': chunk})}\n"
-                        except Exception as e:
-                            logger.error(f"Streaming error: {str(e)}")
-                            yield f"{json.dumps({'error': str(e)})}\n"
-                else:
-                    # Non-streaming mode: send complete response in one message
-                    response_content = llm_response.get("content", "")
-                    if not response_content:
-                        response_content = "No relevant context found for the query."
-
-                    # Create complete response object
-                    complete_response = {"response": response_content}
-                    if request.include_references:
-                        complete_response["references"] = references
-
-                    yield f"{json.dumps(complete_response)}\n"
-
-            return StreamingResponse(
-                stream_generator(),
-                media_type="application/x-ndjson",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "Content-Type": "application/x-ndjson",
-                    "X-Accel-Buffering": "no",  # Ensure proper handling of streaming response when proxied by Nginx
-                },
+        # Start Langfuse tracing if available
+        trace_obj = None
+        if langfuse:
+            logger.info(f"[Langfuse] Creating trace for query: {request.query[:30]}...")
+            trace_input = {
+                "query": request.query,
+                "mode": request.mode,
+                "stream": stream_mode,
+                "top_k": request.top_k,
+                "only_need_context": request.only_need_context,
+                "response_type": request.response_type,
+            }
+            trace_obj = langfuse.start_observation(
+                name="查询流处理",
+                input=trace_input,
+                as_type="trace"
             )
-        except Exception as e:
-            logger.error(f"Error processing streaming query: {str(e)}", exc_info=True)
-            raise HTTPException(status_code=500, detail=str(e))
+            logger.info(f"[Langfuse] Trace created: {trace_obj}")
+        else:
+            logger.info("[Langfuse] Not initialized, skipping trace")
+
+        # Unified approach: always use aquery_llm for all cases
+        result = await rag.aquery_llm(request.query, param=param, parent_span=trace_obj)
+
+        # Get data for tracing
+        data = result.get("data", {})
+        entities = data.get("entities", [])
+        relationships = data.get("relationships", [])
+        chunks = data.get("chunks", [])
+        references = data.get("references", [])
+        llm_response = result.get("llm_response", {})
+        full_prompt = result.get("full_prompt", "")
+
+        # Prepare references with chunk content if requested
+        final_references = references
+        if request.include_references and request.include_chunk_content:
+            ref_id_to_content = {}
+            for chunk in chunks:
+                ref_id = chunk.get("reference_id", "")
+                content = chunk.get("content", "")
+                if ref_id and content:
+                    ref_id_to_content.setdefault(ref_id, []).append(content)
+
+            enriched_references = []
+            for ref in references:
+                ref_copy = ref.copy()
+                ref_id = ref.get("reference_id", "")
+                if ref_id in ref_id_to_content:
+                    ref_copy["content"] = ref_id_to_content[ref_id]
+                enriched_references.append(ref_copy)
+            final_references = enriched_references
+
+        # Track full response content for tracing
+        full_response_content = ""
+        
+        # Create LLM span for response tracking (both streaming and non-streaming)
+        llm_span = None
+        if trace_obj:
+            llm_span = trace_obj.start_observation(
+                name="LLM生成",
+                input={
+                    "query": request.query,
+                    "mode": request.mode,
+                    "is_streaming": llm_response.get("is_streaming", False),
+                    "context_entities_count": len(entities),
+                    "context_relationships_count": len(relationships),
+                    "full_prompt": full_prompt
+                }
+            )
+
+        async def stream_generator():
+            nonlocal full_response_content
+
+            if llm_response.get("is_streaming"):
+                # Streaming mode: send references first, then stream response chunks
+                if request.include_references:
+                    yield f"{json.dumps({'references': final_references})}\n"
+
+                response_stream = llm_response.get("response_iterator")
+                if response_stream:
+                    async for chunk in response_stream:
+                        if chunk:  # Only send non-empty content
+                            full_response_content += chunk
+                            yield f"{json.dumps({'response': chunk})}\n"
+            else:
+                # Non-streaming mode: send complete response in one message
+                response_content = llm_response.get("content", "")
+                if not response_content:
+                    response_content = "No relevant context found for the query."
+                full_response_content = response_content
+
+                # Create complete response object
+                complete_response = {"response": response_content}
+                if request.include_references:
+                    complete_response["references"] = final_references
+
+                yield f"{json.dumps(complete_response)}\n"
+
+            # Update LLM span with collected content
+            if llm_span:
+                llm_span.update(output={
+                    "response_preview": full_response_content[:min(10000, len(full_response_content))],
+                    "response_length": len(full_response_content),
+                    "is_streaming": llm_response.get("is_streaming", False)
+                })
+                llm_span.end()
+
+            # Update Langfuse trace after streaming completes
+            if trace_obj:
+                trace_output = {
+                    "response_length": len(full_response_content),
+                    "response_preview": full_response_content[:min(10000, len(full_response_content))],
+                    "mode": request.mode,
+                    "stream_completed": True
+                }
+                trace_obj.update(output=trace_output)
+                trace_obj.end()
+                langfuse.flush()
+
+        return StreamingResponse(
+            stream_generator(),
+            media_type="application/x-ndjson",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Content-Type": "application/x-ndjson",
+                "X-Accel-Buffering": "no",
+            },
+        )
 
     @router.post(
         "/query/data",

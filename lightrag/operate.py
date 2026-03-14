@@ -7,7 +7,9 @@ import asyncio
 import html
 import json
 import json_repair
+import os
 import re
+import time
 from typing import Any, AsyncIterator, overload, Literal
 from collections import Counter, defaultdict
 
@@ -15,6 +17,20 @@ from lightrag.exceptions import (
     PipelineCancelledException,
     ChunkTokenLimitExceededError,
 )
+
+# Initialize Langfuse for tracing (optional)
+langfuse = None
+try:
+    from langfuse import Langfuse
+    if os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY"):
+        langfuse = Langfuse(
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            host=os.getenv("LANGFUSE_HOST") or os.getenv("LANGFUSE_URL"),
+        )
+except ImportError:
+    pass
+
 from lightrag.utils import (
     logger,
     compute_mdhash_id,
@@ -7546,6 +7562,7 @@ async def kg_query(
     hashing_kv: BaseKVStorage | None = None,
     system_prompt: str | None = None,
     chunks_vdb: BaseVectorStorage = None,
+    parent_span=None,
 ) -> QueryResult | None:
     """
     Execute knowledge graph query and return unified QueryResult object.
@@ -7658,8 +7675,9 @@ async def kg_query(
 
         return "\n".join(corrected_lines)
 
+    # Step 1: Extract keywords (this will create its own span)
     hl_keywords, ll_keywords = await get_keywords_from_query(
-        retrieval_query, query_param, global_config, hashing_kv
+        retrieval_query, query_param, global_config, hashing_kv, parent_span=parent_span
     )
 
     logger.debug(f"High-level keywords: {hl_keywords}")
@@ -7679,6 +7697,21 @@ async def kg_query(
 
     ll_keywords_str = ", ".join(ll_keywords) if ll_keywords else ""
     hl_keywords_str = ", ".join(hl_keywords) if hl_keywords else ""
+
+    # Step 2: Start knowledge graph query span AFTER keywords are extracted
+    kg_span = None
+    if parent_span:
+        kg_span = parent_span.start_observation(
+            name="查询知识图谱",
+            input={
+                "query": retrieval_query,
+                "mode": query_param.mode,
+                "hl_keywords": hl_keywords,
+                "ll_keywords": ll_keywords,
+                "hl_keywords_str": hl_keywords_str,
+                "ll_keywords_str": ll_keywords_str
+            }
+        )
 
     def _extract_second_retrieval_hints(response_text: str) -> list[str]:
         if not response_text:
@@ -7719,7 +7752,34 @@ async def kg_query(
 
     if context_result is None:
         logger.info("[kg_query] No query context could be built; returning no-result.")
+        if kg_span:
+            kg_span.update(output={"error": "No query context could be built"})
+            kg_span.end()
         return None
+
+    # Update knowledge graph span with complete results
+    if kg_span:
+        raw_data = context_result.raw_data or {}
+        data = raw_data.get("data", {})
+        metadata = raw_data.get("metadata", {})
+        processing_info = metadata.get("processing_info", {})
+        entities = data.get("entities", [])
+        relationships = data.get("relationships", [])
+        chunks = data.get("chunks", [])
+        kg_span.update(output={
+            "total_entities_found": processing_info.get("total_entities_found", 0),
+            "total_relations_found": processing_info.get("total_relations_found", 0),
+            "entities_after_truncation": processing_info.get("entities_after_truncation", 0),
+            "relations_after_truncation": processing_info.get("relations_after_truncation", 0),
+            "merged_chunks_count": processing_info.get("merged_chunks_count", 0),
+            "final_chunks_count": processing_info.get("final_chunks_count", 0),
+            "retrieved_entities_count": len(entities),
+            "retrieved_relationships_count": len(relationships),
+            "retrieved_chunks_count": len(chunks),
+            "retrieved_entities": [{"entity_name": e.get("entity_name"), "entity_type": e.get("entity_type")} for e in entities[:10]],
+            "retrieved_relationships": [{"src_id": r.get("src_id"), "tgt_id": r.get("tgt_id"), "description": r.get("description", "")[:100]} for r in relationships[:5]]
+        })
+        kg_span.end()
 
     # Return different content based on query parameters
     if query_param.only_need_context and not query_param.only_need_prompt:
@@ -7744,9 +7804,11 @@ async def kg_query(
 
     user_query = query
 
+    # Build full prompt for tracing
+    full_prompt = "\n\n".join([sys_prompt, "---User Query---", user_query])
+
     if query_param.only_need_prompt:
-        prompt_content = "\n\n".join([sys_prompt, "---User Query---", user_query])
-        return QueryResult(content=prompt_content, raw_data=context_result.raw_data)
+        return QueryResult(content=full_prompt, raw_data=context_result.raw_data, full_prompt=full_prompt)
 
     # Call LLM
     tokenizer: Tokenizer = global_config["tokenizer"]
@@ -7826,7 +7888,7 @@ async def kg_query(
                 ),
             )
 
-    # Return unified result based on actual response type
+    # Process response
     if isinstance(response, str):
         # Non-streaming response (string)
         if len(response) > len(sys_prompt):
@@ -7904,8 +7966,10 @@ async def kg_query(
                         second_context_result.raw_data["metadata"][
                             "second_retrieval"
                         ] = {"hints": second_hints}
+                        # Build full prompt for second retrieval
+                        full_prompt_2 = "\n\n".join([sys_prompt_2, "---User Query---", user_query])
                         return QueryResult(
-                            content=response_2, raw_data=second_context_result.raw_data
+                            content=response_2, raw_data=second_context_result.raw_data, full_prompt=full_prompt_2
                         )
                     else:
                         if "metadata" not in second_context_result.raw_data:
@@ -7913,10 +7977,13 @@ async def kg_query(
                         second_context_result.raw_data["metadata"][
                             "second_retrieval"
                         ] = {"hints": second_hints}
+                        # Build full prompt for second retrieval
+                        full_prompt_2 = "\n\n".join([sys_prompt_2, "---User Query---", user_query])
                         return QueryResult(
                             response_iterator=response_2,
                             raw_data=second_context_result.raw_data,
                             is_streaming=True,
+                            full_prompt=full_prompt_2,
                         )
         _log_electrical_answer_debug(
             "before_postprocess",
@@ -7932,7 +7999,7 @@ async def kg_query(
             context_result.raw_data,
             response,
         )
-        return QueryResult(content=response, raw_data=context_result.raw_data)
+        return QueryResult(content=response, raw_data=context_result.raw_data, full_prompt=full_prompt)
     else:
         # Streaming response (AsyncIterator)
         _log_electrical_answer_debug("stream_return", context_result.raw_data)
@@ -7940,6 +8007,7 @@ async def kg_query(
             response_iterator=response,
             raw_data=context_result.raw_data,
             is_streaming=True,
+            full_prompt=full_prompt,
         )
 
 
@@ -7948,6 +8016,7 @@ async def get_keywords_from_query(
     query_param: QueryParam,
     global_config: dict[str, str],
     hashing_kv: BaseKVStorage | None = None,
+    parent_span=None,
 ) -> tuple[list[str], list[str]]:
     """
     Retrieves high-level and low-level keywords for RAG operations.
@@ -7960,18 +8029,50 @@ async def get_keywords_from_query(
         query_param: Query parameters that may contain pre-defined keywords
         global_config: Global configuration dictionary
         hashing_kv: Optional key-value storage for caching results
+        parent_span: Optional parent Langfuse span for tracing
 
     Returns:
         A tuple containing (high_level_keywords, low_level_keywords)
     """
+    # Start Langfuse tracing if parent_span provided
+    keyword_span = None
+    if parent_span:
+        keyword_span = parent_span.start_observation(
+            name="提取关键词",
+            input={"query": query, "mode": query_param.mode}
+        )
+
     # Check if pre-defined keywords are already provided
     if query_param.hl_keywords or query_param.ll_keywords:
-        return query_param.hl_keywords, query_param.ll_keywords
+        hl_keywords = query_param.hl_keywords
+        ll_keywords = query_param.ll_keywords
+        if keyword_span:
+            keyword_span.update(output={
+                "high_level_keywords": hl_keywords,
+                "low_level_keywords": ll_keywords,
+                "source": "provided",
+                "high_level_count": len(hl_keywords),
+                "low_level_count": len(ll_keywords)
+            })
+            keyword_span.end()
+        return hl_keywords, ll_keywords
 
     # Extract keywords using extract_keywords_only function which already supports conversation history
     hl_keywords, ll_keywords = await extract_keywords_only(
-        query, query_param, global_config, hashing_kv
+        query, query_param, global_config, hashing_kv, parent_span=keyword_span
     )
+
+    # Update Langfuse span if tracing enabled
+    if keyword_span:
+        keyword_span.update(output={
+            "high_level_keywords": hl_keywords,
+            "low_level_keywords": ll_keywords,
+            "source": "extracted",
+            "high_level_count": len(hl_keywords),
+            "low_level_count": len(ll_keywords)
+        })
+        keyword_span.end()
+
     return hl_keywords, ll_keywords
 
 
@@ -8027,12 +8128,21 @@ async def extract_keywords_only(
     param: QueryParam,
     global_config: dict[str, str],
     hashing_kv: BaseKVStorage | None = None,
+    parent_span=None,
 ) -> tuple[list[str], list[str]]:
     """
     Extract high-level and low-level keywords from the given 'text' using the LLM.
     This method does NOT build the final RAG context or provide a final answer.
     It ONLY extracts keywords (hl_keywords, ll_keywords).
     """
+
+    # Start Langfuse tracing if parent_span provided
+    extraction_span = None
+    if parent_span:
+        extraction_span = parent_span.start_observation(
+            name="LLM关键词提取",
+            input={"query": text, "mode": param.mode}
+        )
 
     # 1. Build the examples
     examples = "\n".join(PROMPTS["keywords_extraction_examples"])
@@ -8052,9 +8162,17 @@ async def extract_keywords_only(
         cached_response, _ = cached_result  # Extract content, ignore timestamp
         try:
             keywords_data = json_repair.loads(cached_response)
-            return keywords_data.get("high_level_keywords", []), keywords_data.get(
-                "low_level_keywords", []
-            )
+            hl_keywords = keywords_data.get("high_level_keywords", [])
+            ll_keywords = keywords_data.get("low_level_keywords", [])
+            if extraction_span:
+                extraction_span.update(output={
+                    "high_level_keywords": hl_keywords,
+                    "low_level_keywords": ll_keywords,
+                    "source": "cache",
+                    "cached": True
+                })
+                extraction_span.end()
+            return hl_keywords, ll_keywords
         except (json.JSONDecodeError, KeyError):
             logger.warning(
                 "Invalid cache format for keywords, proceeding with extraction"
@@ -8081,7 +8199,26 @@ async def extract_keywords_only(
         # Apply higher priority (5) to query relation LLM function
         use_model_func = partial(use_model_func, _priority=5)
 
+    # Get model name for tracing
+    model_name = global_config.get("llm_model_name", "unknown")
+    
+    # Update span with LLM call details before invocation
+    if extraction_span:
+        extraction_span.update(metadata={
+            "model": model_name,
+            "prompt_tokens": len_of_prompts,
+            "cache_hit": False
+        })
+
+    llm_start_time = time.time()
     result = await use_model_func(kw_prompt, keyword_extraction=True)
+    llm_latency_ms = (time.time() - llm_start_time) * 1000
+
+    # Update span with LLM response details
+    if extraction_span:
+        extraction_span.update(metadata={
+            "llm_latency_ms": round(llm_latency_ms, 2)
+        })
 
     # 5. Parse out JSON from the LLM response
     result = remove_think_tags(result)
@@ -8097,6 +8234,17 @@ async def extract_keywords_only(
 
     hl_keywords = keywords_data.get("high_level_keywords", [])
     ll_keywords = keywords_data.get("low_level_keywords", [])
+
+    # Update span with extraction results
+    if extraction_span:
+        extraction_span.update(output={
+            "high_level_keywords": hl_keywords,
+            "low_level_keywords": ll_keywords,
+            "source": "llm",
+            "cached": False,
+            "high_level_count": len(hl_keywords),
+            "low_level_count": len(ll_keywords)
+        })
 
     # Domain-specific keyword augmentation for electrical standards queries.
     if global_config.get("kg_schema_mode") == "electrical_controlled":
@@ -8146,6 +8294,10 @@ async def extract_keywords_only(
                     queryparam=queryparam_dict,
                 ),
             )
+
+    # Close Langfuse span if tracing enabled
+    if extraction_span:
+        extraction_span.end()
 
     return hl_keywords, ll_keywords
 
@@ -10208,9 +10360,11 @@ async def naive_query(
 
     user_query = query
 
+    # Build full prompt for tracing
+    full_prompt = "\n\n".join([sys_prompt, "---User Query---", user_query])
+
     if query_param.only_need_prompt:
-        prompt_content = "\n\n".join([sys_prompt, "---User Query---", user_query])
-        return QueryResult(content=prompt_content, raw_data=raw_data)
+        return QueryResult(content=full_prompt, raw_data=raw_data, full_prompt=full_prompt)
 
     # Handle cache
     _log_electrical_answer_debug("naive_pre_llm", raw_data)
@@ -10299,10 +10453,10 @@ async def naive_query(
         )
         _log_electrical_answer_debug("naive_after_postprocess", raw_data, response)
 
-        return QueryResult(content=response, raw_data=raw_data)
+        return QueryResult(content=response, raw_data=raw_data, full_prompt=full_prompt)
     else:
         # Streaming response (AsyncIterator)
         _log_electrical_answer_debug("naive_stream_return", raw_data)
         return QueryResult(
-            response_iterator=response, raw_data=raw_data, is_streaming=True
+            response_iterator=response, raw_data=raw_data, is_streaming=True, full_prompt=full_prompt
         )
