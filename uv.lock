@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14' and python_full_version < '4' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
@@ -2549,6 +2549,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
     { name = "configparser" },
+    { name = "fastapi" },
     { name = "google-api-core" },
     { name = "google-genai" },
     { name = "json-repair" },
@@ -2805,6 +2806,7 @@ requires-dist = [
     { name = "datasets", marker = "extra == 'evaluation'", specifier = ">=4.3.0" },
     { name = "distro", marker = "extra == 'api'" },
     { name = "docling", marker = "sys_platform != 'darwin' and extra == 'docling'", specifier = ">=2.0.0,<3.0.0" },
+    { name = "fastapi", specifier = ">=0.120.2" },
     { name = "fastapi", marker = "extra == 'api'" },
     { name = "google-api-core", specifier = ">=2.0.0,<3.0.0" },
     { name = "google-api-core", marker = "extra == 'api'", specifier = ">=2.0.0,<3.0.0" },
@@ -2829,8 +2831,8 @@ requires-dist = [
     { name = "neo4j", marker = "extra == 'offline-storage'", specifier = ">=5.0.0,<7.0.0" },
     { name = "networkx" },
     { name = "networkx", marker = "extra == 'api'" },
-    { name = "numpy", specifier = ">=1.24.0,<2.0.0" },
-    { name = "numpy", marker = "extra == 'api'", specifier = ">=1.24.0,<2.0.0" },
+    { name = "numpy", specifier = ">=1.24.0,<3.0.0" },
+    { name = "numpy", marker = "extra == 'api'", specifier = ">=1.24.0,<3.0.0" },
     { name = "ollama", marker = "extra == 'offline-llm'", specifier = ">=0.1.0,<1.0.0" },
     { name = "openai", marker = "extra == 'api'", specifier = ">=2.0.0,<3.0.0" },
     { name = "openai", marker = "extra == 'offline-llm'", specifier = ">=2.0.0,<3.0.0" },
