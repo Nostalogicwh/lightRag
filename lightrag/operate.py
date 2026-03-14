@@ -1,4 +1,5 @@
 from __future__ import annotations
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 
@@ -77,6 +78,7 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
 
 _TREE_OVERRIDE_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
+_DOMAIN_RULE_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
 
 
 def _normalize_text_key(value: str) -> str:
@@ -1370,6 +1372,55 @@ def _resolve_annotation_source_paths(schema_cfg: dict | None = None) -> tuple[Pa
     return memory_path, source_paths
 
 
+def _resolve_domain_rules_path(schema_cfg: dict | None = None) -> Path | None:
+    schema_cfg = schema_cfg or {}
+    path_text = str(schema_cfg.get("electrical_rules_path", "") or "").strip()
+    if not path_text:
+        return None
+    path = Path(path_text).expanduser()
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    return path
+
+
+def _load_domain_rules(schema_cfg: dict | None = None) -> dict[str, Any]:
+    schema_cfg = schema_cfg or {}
+    path = _resolve_domain_rules_path(schema_cfg)
+    if path is None:
+        logger.warning("Domain rules path is empty in electrical_schema config")
+        return {}
+    if not path.exists():
+        logger.warning("Domain rules file not found: %s", path)
+        return {}
+
+    logger.info("Loading domain rules from %s", path)
+
+    cache_key = str(path.resolve())
+    mtime = path.stat().st_mtime
+    cached = _DOMAIN_RULE_CACHE.get(cache_key)
+    if cached and cached[0] == mtime:
+        logger.info(
+            "Domain rules cache hit: %s (rules=%s)",
+            path,
+            len((cached[1] or {}).get("rules", []) or []),
+        )
+        return deepcopy(cached[1])
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Failed to load domain rules %s: %s", path, exc)
+        return {}
+
+    if not isinstance(payload, dict):
+        logger.warning("Domain rules payload must be object: %s", path)
+        return {}
+
+    logger.info("Loaded domain rules: %s rule(s) from %s", len(payload.get("rules", []) or []), path)
+    _DOMAIN_RULE_CACHE[cache_key] = (mtime, payload)
+    return deepcopy(payload)
+
+
 def _load_tree_override_rules(schema_cfg: dict | None = None) -> dict[str, Any]:
     """Load cumulative annotation memory and merge optional incremental sources."""
     schema_cfg = schema_cfg or {}
@@ -1407,6 +1458,993 @@ def _load_tree_override_rules(schema_cfg: dict | None = None) -> dict[str, Any]:
         except Exception as exc:
             logger.warning("Failed to persist annotation memory %s: %s", memory_path, exc)
     return merged_rules
+
+
+def _evaluate_domain_rule_decisions(
+    query: str,
+    schema_cfg: dict | None = None,
+) -> dict[str, Any]:
+    schema_cfg = schema_cfg or {}
+    domain_rules = _load_domain_rules(schema_cfg)
+    rules = domain_rules.get("rules", []) or []
+    if not isinstance(rules, list) or not rules:
+        return {}
+
+    def _extract_named_voltage_kv(query_text: str, labels: list[str]) -> float | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        normalized = text.replace("（", "(").replace("）", ")")
+        for label in labels:
+            pattern = rf"{re.escape(label)}\s*([0-9]+(?:\.[0-9]+)?)\s*(?:kV)?"
+            match = re.search(pattern, normalized, flags=re.IGNORECASE)
+            if match:
+                return float(match.group(1))
+        return None
+
+    def _extract_rated_voltage_kv(query_text: str) -> float | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        match = re.search(
+            r"额定电压\s*([0-9]+(?:\.[0-9]+)?)\s*kV\b", text, flags=re.IGNORECASE
+        )
+        return float(match.group(1)) if match else None
+
+    def _extract_rated_current_amp(query_text: str) -> int | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        match = re.search(r"额定电流\s*([0-9]+)\s*A\b", text, flags=re.IGNORECASE)
+        return int(match.group(1)) if match else None
+
+    def _extract_model_prefix(query_text: str) -> str | None:
+        text = str(query_text or "").strip()
+        if not text:
+            return None
+        match = re.search(r"型号名称\s*[：:]\s*([A-Za-z0-9]+)", text)
+        return match.group(1).upper() if match else None
+
+    def _query_contains(text: str, needle: str) -> bool:
+        return bool(str(text or "").strip() and needle and needle in text)
+
+    def _matches_condition(condition: dict[str, Any], query_text: str) -> bool:
+        cond_type = str(condition.get("type", "") or "").strip()
+        label = str(condition.get("label", "") or "").strip()
+        if cond_type == "contains":
+            return _query_contains(query_text, label)
+        if cond_type == "equals_numeric":
+            value = condition.get("value")
+            if label == "额定电压":
+                actual = _extract_rated_voltage_kv(query_text)
+            elif label == "额定电流":
+                actual = _extract_rated_current_amp(query_text)
+            else:
+                actual = None
+            return actual is not None and float(actual) == float(value)
+        if cond_type == "greater_numeric":
+            value = condition.get("value")
+            if label == "额定电压":
+                actual = _extract_rated_voltage_kv(query_text)
+            elif label == "额定电流":
+                actual = _extract_rated_current_amp(query_text)
+            else:
+                actual = None
+            return actual is not None and float(actual) > float(value)
+        if cond_type == "regex_extract_not_equals":
+            pattern = str(condition.get("pattern", "") or "").strip()
+            disallowed = str(condition.get("value", "") or "").strip().upper()
+            if not pattern:
+                return False
+            match = re.search(pattern, query_text)
+            return bool(match and match.group(1).strip().upper() != disallowed)
+        if cond_type == "all":
+            subconditions = condition.get("conditions", []) or []
+            return isinstance(subconditions, list) and all(
+                isinstance(item, dict) and _matches_condition(item, query_text)
+                for item in subconditions
+            )
+        return False
+
+    rated_voltage_kv = _extract_rated_voltage_kv(query)
+    rated_current_amp = _extract_rated_current_amp(query)
+    model_prefix = _extract_model_prefix(query)
+    explicit_solid_sealed_pole = _query_contains(query, "元件中含固封极柱")
+    pf_base_for_split = _extract_named_voltage_kv(
+        query,
+        ["额定短时工频耐受电压", "额定工频耐受电压"],
+    )
+    pf_fracture_for_split = _extract_named_voltage_kv(
+        query,
+        ["额定短时工频耐受电压(断口)", "额定工频耐受电压(断口)"],
+    )
+    pf_fracture_split_active = bool(
+        pf_base_for_split is not None
+        and pf_fracture_for_split is not None
+        and pf_fracture_for_split > pf_base_for_split
+    )
+    decisions: dict[str, Any] = {}
+
+    for raw_rule in rules:
+        if not isinstance(raw_rule, dict):
+            continue
+
+        rule_id = str(raw_rule.get("rule_id", "") or "").strip()
+        if not rule_id:
+            continue
+        rule_kind = str(raw_rule.get("kind", "") or "").strip()
+
+        if rule_kind == "split":
+            input_cfg = raw_rule.get("inputs", {}) or {}
+            trigger_when_any = input_cfg.get("trigger_when_any", []) or []
+            base_labels = input_cfg.get("base_voltage_labels", []) or []
+            fracture_labels = input_cfg.get("fracture_voltage_labels", []) or []
+            split_enabled = False
+            base_kv = None
+            fracture_kv = None
+            fracture_provided = False
+
+            single_output = raw_rule.get("single_output", {}) or {}
+            split_outputs = raw_rule.get("split_output", []) or []
+
+            test_item = str(raw_rule.get("test_item", "") or "")
+            if isinstance(trigger_when_any, list) and trigger_when_any:
+                matched_conditions: list[str] = []
+                for condition in trigger_when_any:
+                    if not isinstance(condition, dict):
+                        continue
+                    if _matches_condition(condition, query):
+                        matched_conditions.append(
+                            str(condition.get("label", "") or condition.get("type", "") or "")
+                        )
+                split_enabled = bool(matched_conditions)
+                reason_code = "split_enabled" if split_enabled else "split_not_triggered"
+                reason_text = (
+                    f"命中条件：{'；'.join(matched_conditions)}，允许拆分。"
+                    if split_enabled
+                    else "未命中任何拆分触发条件，保持未拆分。"
+                )
+                if (
+                    rule_id == "insulation.gb.power_frequency_outdoor_state_split"
+                    and split_enabled
+                    and pf_fracture_split_active
+                ):
+                    split_enabled = False
+                    reason_code = "delegated_to_power_frequency_split"
+                    reason_text = "户外命名拆分被工频断口拆分接管，最终由工频断口拆分直接产出三条工频项目。"
+            else:
+                if not isinstance(base_labels, list) or not isinstance(fracture_labels, list):
+                    continue
+
+                base_kv = _extract_named_voltage_kv(query, [str(v) for v in base_labels])
+                fracture_kv = _extract_named_voltage_kv(
+                    query, [str(v) for v in fracture_labels]
+                )
+                fracture_provided = fracture_kv is not None
+                split_enabled = bool(
+                    base_kv is not None and fracture_kv is not None and fracture_kv > base_kv
+                )
+
+                domain_label = "雷电" if "雷电" in test_item else "工频"
+                reason_code = "split_enabled"
+                reason_text = f"断口{domain_label}值严格大于本体值，允许拆分。"
+                if not fracture_provided:
+                    reason_code = "fracture_not_provided"
+                    reason_text = f"未提供断口{domain_label}参数，必须保持未拆分。"
+                elif base_kv is None:
+                    reason_code = "base_not_provided"
+                    reason_text = f"未提供本体{domain_label}参数，不能触发拆分。"
+                elif fracture_kv <= base_kv:
+                    if rated_voltage_kv == 40.5:
+                        reason_code = "ur_40_5_prefer_single"
+                        reason_text = (
+                            f"Ur=40.5kV 且断口{domain_label}值未严格大于本体值，必须保持未拆分。"
+                        )
+                    else:
+                        reason_code = "fracture_not_greater"
+                        reason_text = f"断口{domain_label}值小于或等于本体值，必须保持未拆分。"
+
+                if (
+                    rule_id == "insulation.gb.power_frequency_split"
+                    and split_enabled
+                    and ("户外产品" in query or "户外" in query)
+                ):
+                    split_outputs = [
+                        {
+                            "test_item": "工频耐受电压试验",
+                            "inherits_from": "工频耐受电压试验",
+                            "parameter_overrides": {
+                                "试验部位": "相间、对地",
+                                "试验状态": "干",
+                                "试验次数": "9次",
+                            },
+                        },
+                        {
+                            "test_item": "工频耐受电压试验(相间及对地)",
+                            "inherits_from": "工频耐受电压试验",
+                            "parameter_overrides": {
+                                "试验部位": "相间及对地",
+                                "试验状态": "湿",
+                                "试验次数": "9次",
+                            },
+                        },
+                        {
+                            "test_item": "工频耐受电压试验(断口)",
+                            "inherits_from": "工频耐受电压试验",
+                            "parameter_overrides": {
+                                "试验部位": "开关断口",
+                                "试验状态": "干",
+                                "试验次数": "6次",
+                            },
+                        },
+                    ]
+                    reason_text = "断口工频值严格大于本体值且命中户外条件，工频耐受电压试验拆分为原项目(干)、相间及对地(湿)、断口(干)。"
+
+            decisions[rule_id] = {
+                "rule_id": rule_id,
+                "domain": raw_rule.get("domain", ""),
+                "test_item": raw_rule.get("test_item", ""),
+                "kind": "split",
+                "inputs": {
+                    "rated_voltage_kv": rated_voltage_kv,
+                    "base_voltage_kv": base_kv,
+                    "fracture_voltage_kv": fracture_kv,
+                    "fracture_voltage_provided": fracture_provided,
+                },
+                "decision": "split" if split_enabled else "single",
+                "enabled": split_enabled,
+                "reason_code": reason_code,
+                "reason_text": reason_text,
+                "single_output": single_output,
+                "split_output": split_outputs,
+            }
+            continue
+
+        if rule_kind == "applicability":
+            allow_when_any = raw_rule.get("allow_when_any", []) or []
+            matched_conditions: list[str] = []
+            matched_reason_texts: list[str] = []
+            test_item = str(raw_rule.get("test_item", "") or "").strip()
+            for condition in allow_when_any:
+                if not isinstance(condition, dict):
+                    continue
+                if _matches_condition(condition, query):
+                    label = str(condition.get("label", "") or condition.get("type", "") or "")
+                    if condition.get("type") == "all":
+                        label = "组合条件命中"
+                        matched_reason_texts.append("型号前缀不是VF1且额定电流精确等于4000A")
+                    elif condition.get("type") == "contains":
+                        matched_reason_texts.append(str(condition.get("label", "") or ""))
+                    elif condition.get("type") == "equals_numeric":
+                        matched_reason_texts.append(
+                            f"{condition.get('label', '')}={condition.get('value', '')}{condition.get('unit', '')}"
+                        )
+                    elif condition.get("type") == "greater_numeric":
+                        matched_reason_texts.append(
+                            f"{condition.get('label', '')}>{condition.get('value', '')}{condition.get('unit', '')}"
+                        )
+                    matched_conditions.append(label)
+            enabled = bool(matched_conditions)
+            reason_code = "allowed" if enabled else "denied"
+            reason_text = (
+                f"{test_item}适用。命中条件："
+                + "；".join(matched_reason_texts or matched_conditions)
+                + (
+                    "。该结论只决定是否输出局部放电试验，不决定试验次数。"
+                    if test_item == "局部放电试验"
+                    else "。"
+                )
+                if enabled
+                else f"未命中任何{test_item}适用条件，禁止输出{test_item}。"
+            )
+            decisions[rule_id] = {
+                "rule_id": rule_id,
+                "domain": raw_rule.get("domain", ""),
+                "test_item": test_item,
+                "kind": "applicability",
+                "decision": "allow" if enabled else "deny",
+                "enabled": enabled,
+                "reason_code": reason_code,
+                "reason_text": reason_text,
+                "matched_conditions": matched_conditions,
+                "inputs": {
+                    "rated_voltage_kv": rated_voltage_kv,
+                    "rated_current_amp": rated_current_amp,
+                    "model_prefix": model_prefix,
+                    "explicit_solid_sealed_pole": explicit_solid_sealed_pole,
+                },
+            }
+            continue
+
+        if rule_kind == "count":
+            input_cfg = raw_rule.get("inputs", {}) or {}
+            pf_base_labels = input_cfg.get("power_frequency_base_labels", []) or []
+            pf_fracture_labels = input_cfg.get("power_frequency_fracture_labels", []) or []
+            li_base_labels = input_cfg.get("lightning_base_labels", []) or []
+            li_fracture_labels = input_cfg.get("lightning_fracture_labels", []) or []
+            pf_base = _extract_named_voltage_kv(query, [str(v) for v in pf_base_labels])
+            pf_fracture = _extract_named_voltage_kv(
+                query, [str(v) for v in pf_fracture_labels]
+            )
+            li_base = _extract_named_voltage_kv(query, [str(v) for v in li_base_labels])
+            li_fracture = _extract_named_voltage_kv(
+                query, [str(v) for v in li_fracture_labels]
+            )
+            pf_strictly_greater = bool(
+                pf_base is not None and pf_fracture is not None and pf_fracture > pf_base
+            )
+            li_strictly_greater = bool(
+                li_base is not None and li_fracture is not None and li_fracture > li_base
+            )
+            count_cfg = raw_rule.get("decision", {}) or {}
+            if rated_voltage_kv == 40.5 and not pf_strictly_greater and not li_strictly_greater:
+                count_value = "3次"
+                reason_code = "ur_40_5_priority"
+                reason_text = "Ur=40.5kV 且断口值未严格大于本体值，局放次数固定为3次。"
+            elif pf_strictly_greater or li_strictly_greater:
+                count_value = str(
+                    count_cfg.get("count_when_fracture_strictly_greater", "9次")
+                )
+                reason_code = "fracture_strictly_greater"
+                reason_text = "断口工频或雷电值严格大于本体值，局放次数按9次。"
+            else:
+                count_value = str(count_cfg.get("count_otherwise", "3次"))
+                reason_code = "default_single_count"
+                reason_text = "未命中断口严格大于条件，局放次数按3次。"
+            decisions[rule_id] = {
+                "rule_id": rule_id,
+                "domain": raw_rule.get("domain", ""),
+                "test_item": raw_rule.get("test_item", ""),
+                "kind": "count",
+                "decision": count_value,
+                "enabled": True,
+                "reason_code": reason_code,
+                "reason_text": reason_text,
+                "inputs": {
+                    "rated_voltage_kv": rated_voltage_kv,
+                    "power_frequency_base_kv": pf_base,
+                    "power_frequency_fracture_kv": pf_fracture,
+                    "lightning_base_kv": li_base,
+                    "lightning_fracture_kv": li_fracture,
+                    "power_frequency_fracture_strictly_greater": pf_strictly_greater,
+                    "lightning_fracture_strictly_greater": li_strictly_greater,
+                },
+            }
+
+    return decisions
+
+
+def _apply_domain_rule_decisions_to_project_context(
+    project_param_map: dict[str, list[str]],
+    project_param_value_map: dict[str, dict[str, dict[str, str]]],
+    domain_rule_decisions: dict[str, Any],
+    rule_query_text: str | None = None,
+) -> tuple[dict[str, list[str]], dict[str, dict[str, dict[str, str]]]]:
+    updated_param_map = deepcopy(project_param_map)
+    updated_value_map = deepcopy(project_param_value_map)
+
+    def _ensure_test(test_name: str) -> None:
+        updated_param_map.setdefault(test_name, [])
+        updated_value_map.setdefault(test_name, {})
+
+    def _ensure_param(test_name: str, param_name: str) -> None:
+        _ensure_test(test_name)
+        if param_name not in updated_param_map[test_name]:
+            updated_param_map[test_name].append(param_name)
+        updated_value_map[test_name].setdefault(param_name, {})
+
+    def _set_param(
+        test_name: str,
+        param_name: str,
+        value_text: str,
+        *,
+        value_source: str = "rule",
+        value_type: str = "text",
+        constraints: str | None = None,
+        calc_rule: str = "",
+        derive_from_rated: str = "",
+        resolution_mode: str = "graph_final",
+    ) -> None:
+        _ensure_param(test_name, param_name)
+        updated_value_map[test_name][param_name].update(
+            {
+                "value_text": value_text,
+                "value_source": value_source,
+                "value_expr": value_text if value_source == "user_input" else "",
+                "unit": "",
+                "constraints": constraints if constraints is not None else value_text,
+                "calc_rule": calc_rule,
+                "derive_from_rated": derive_from_rated,
+                "resolution_mode": resolution_mode,
+            }
+        )
+
+    def _format_voltage_value(value: float) -> str:
+        if float(value).is_integer():
+            return f"{int(value)} kV"
+        text = f"{value:.2f}".rstrip("0").rstrip(".")
+        return f"{text} kV"
+
+    query_text = str(rule_query_text or "").strip()
+    rated_voltage_match = re.search(
+        r"额定电压\s*([0-9]+(?:\.[0-9]+)?)\s*kV\b", query_text, flags=re.IGNORECASE
+    )
+    rated_voltage_kv = float(rated_voltage_match.group(1)) if rated_voltage_match else None
+    is_three_phase_default = rated_voltage_kv is not None and rated_voltage_kv <= 40.5
+    dielectric_value = (
+        "充气/充油"
+        if any(token in query_text for token in ("SF6", "六氟化硫", "充气断路器", "充油断路器"))
+        else "正常"
+    )
+    def _set_if_present(
+        test_name: str,
+        param_name: str,
+        value_text: str,
+        *,
+        calc_rule: str = "",
+    ) -> None:
+        if test_name not in updated_param_map:
+            return
+        if param_name not in updated_param_map.get(test_name, []):
+            return
+        _set_param(
+            test_name,
+            param_name,
+            value_text,
+            value_source="rule",
+            value_type="text",
+            constraints=value_text,
+            calc_rule=calc_rule,
+            resolution_mode="graph_final",
+        )
+
+    for decision in domain_rule_decisions.values():
+        if not isinstance(decision, dict):
+            continue
+        rule_kind = str(decision.get("kind", "") or "")
+        test_item = str(decision.get("test_item", "") or "")
+        rule_id = str(decision.get("rule_id", "") or "")
+
+        if rule_kind == "applicability":
+            if not decision.get("enabled"):
+                updated_param_map.pop(test_item, None)
+                updated_value_map.pop(test_item, None)
+            continue
+
+        if rule_kind == "count" and test_item == "局部放电试验":
+            count_value = str(decision.get("decision", "") or "").strip()
+            rule_inputs = decision.get("inputs", {}) if isinstance(decision, dict) else {}
+            rated_voltage_kv = (
+                float(rule_inputs.get("rated_voltage_kv"))
+                if isinstance(rule_inputs, dict)
+                and rule_inputs.get("rated_voltage_kv") is not None
+                else None
+            )
+            if rated_voltage_kv is not None:
+                pre_voltage = round(rated_voltage_kv * 1.3, 2)
+                ac_voltage = round(rated_voltage_kv * 1.1, 2)
+                pre_time = "30s" if rated_voltage_kv == 40.5 else "60s"
+                _set_param(
+                    "局部放电试验",
+                    "预加电压",
+                    _format_voltage_value(pre_voltage),
+                    value_source="rule",
+                    value_type="text",
+                    constraints=_format_voltage_value(pre_voltage),
+                    calc_rule=f"1.3 × {rated_voltage_kv} kV = {_format_voltage_value(pre_voltage)}",
+                    resolution_mode="graph_final",
+                )
+                _set_param(
+                    "局部放电试验",
+                    "预加时间",
+                    pre_time,
+                    value_source="rule",
+                    value_type="text",
+                    constraints=pre_time,
+                    calc_rule=(
+                        "Ur=40.5kV 时预加时间为30s。"
+                        if rated_voltage_kv == 40.5
+                        else "Ur=12kV 时预加时间为60s。"
+                    ),
+                    resolution_mode="graph_final",
+                )
+                _set_param(
+                    "局部放电试验",
+                    "交流电压",
+                    _format_voltage_value(ac_voltage),
+                    value_source="rule",
+                    value_type="text",
+                    constraints=_format_voltage_value(ac_voltage),
+                    calc_rule=f"1.1 × {rated_voltage_kv} kV = {_format_voltage_value(ac_voltage)}",
+                    resolution_mode="graph_final",
+                )
+                _set_param(
+                    "局部放电试验",
+                    "测量时间(min)",
+                    "1min",
+                    value_source="rule",
+                    value_type="text",
+                    constraints="1min",
+                    calc_rule="局部放电测量时间固定为1min。",
+                    resolution_mode="graph_final",
+                )
+            if count_value:
+                _set_param(
+                    "局部放电试验",
+                    "试验次数",
+                    count_value,
+                    value_source="rule",
+                    value_type="text",
+                    constraints=count_value,
+                    calc_rule=str(decision.get("reason_text", "") or count_value),
+                    resolution_mode="graph_final",
+                )
+            continue
+
+        if rule_kind != "split" or not test_item:
+            continue
+
+        source_params = list(updated_param_map.get(test_item, []) or [])
+        source_values = deepcopy(updated_value_map.get(test_item, {}) or {})
+        if not source_params:
+            continue
+
+        if decision.get("enabled"):
+            updated_param_map.pop(test_item, None)
+            updated_value_map.pop(test_item, None)
+            for split_output in decision.get("split_output", []) or []:
+                if not isinstance(split_output, dict):
+                    continue
+                target_name = str(split_output.get("test_item", "") or "").strip()
+                if not target_name:
+                    continue
+                updated_param_map[target_name] = list(source_params)
+                updated_value_map[target_name] = deepcopy(source_values)
+                for param_name, value_text in (
+                    split_output.get("parameter_overrides", {}) or {}
+                ).items():
+                    value_source = "formula" if param_name == "试验次数" else "rule"
+                    calc_rule = (
+                        str(decision.get("reason_text", "") or value_text)
+                        if param_name == "试验次数"
+                        else ""
+                    )
+                    _set_param(
+                        target_name,
+                        str(param_name),
+                        str(value_text),
+                        value_source="rule",
+                        value_type="text",
+                        constraints=str(value_text),
+                        calc_rule=calc_rule,
+                        resolution_mode="graph_final",
+                    )
+        else:
+            single_output = decision.get("single_output", {}) or {}
+            for param_name, value_text in (single_output.get("parameter_overrides", {}) or {}).items():
+                _set_param(
+                    test_item,
+                    str(param_name),
+                    str(value_text),
+                    value_source="rule",
+                    value_type="text",
+                    resolution_mode="graph_final",
+                )
+
+    # Programmatically finalize high-frequency insulation defaults so the model
+    # does not need to resolve conditional default prose on its own.
+    if is_three_phase_default:
+        for test_name in (
+            "工频耐受电压试验",
+            "工频耐受电压试验(干)",
+            "工频耐受电压试验(湿)",
+            "工频耐受电压试验(断口)",
+            "工频耐受电压试验(相间及对地)",
+            "雷电冲击耐受电压试验",
+            "雷电冲击耐受电压试验(断口)",
+            "雷电冲击耐受电压试验(相间及对地)",
+            "局部放电试验",
+        ):
+            _set_if_present(
+                test_name,
+                "试验相数",
+                "三相",
+                calc_rule="40.5kV及以下默认三相。",
+            )
+
+    for test_name in (
+        "工频耐受电压试验",
+        "工频耐受电压试验(干)",
+        "工频耐受电压试验(湿)",
+        "工频耐受电压试验(断口)",
+        "工频耐受电压试验(相间及对地)",
+        "雷电冲击耐受电压试验",
+        "雷电冲击耐受电压试验(断口)",
+        "雷电冲击耐受电压试验(相间及对地)",
+        "局部放电试验",
+    ):
+        _set_if_present(
+            test_name,
+            "介质性质",
+            dielectric_value,
+            calc_rule="根据用户输入中的介质/气体信息判定；未命中充气/充油证据时默认为正常。",
+        )
+
+    for test_name in (
+        "工频耐受电压试验",
+        "工频耐受电压试验(干)",
+        "工频耐受电压试验(湿)",
+        "工频耐受电压试验(断口)",
+        "工频耐受电压试验(相间及对地)",
+    ):
+        _set_if_present(test_name, "试验时间", "1min", calc_rule="工频耐受电压试验时间固定为1min。")
+
+    _set_if_present(
+        "工频耐受电压试验",
+        "试验状态",
+        "干",
+        calc_rule="未命中户外干/湿拆分时，工频耐受电压试验默认按干态输出。",
+    )
+    _set_if_present(
+        "工频耐受电压试验(断口)",
+        "试验状态",
+        "干",
+        calc_rule="断口工频耐受电压试验按干态输出。",
+    )
+    _set_if_present(
+        "工频耐受电压试验(相间及对地)",
+        "试验状态",
+        "干",
+        calc_rule="未命中特殊拆分规则时，相间及对地工频耐受电压试验默认按干态输出。",
+    )
+
+    _set_if_present("工频耐受电压试验", "试验次数", "9次", calc_rule="未拆分工频耐受电压试验按9次。")
+    _set_if_present("雷电冲击耐受电压试验", "试验次数", "270次", calc_rule="未拆分雷电冲击耐受电压试验按270次。")
+    _set_if_present("工频耐受电压试验(断口)", "试验次数", "6次", calc_rule="拆分后断口工频耐受电压试验按6次。")
+    _set_if_present("工频耐受电压试验(相间及对地)", "试验次数", "9次", calc_rule="拆分后相间及对地工频耐受电压试验按9次。")
+    _set_if_present("雷电冲击耐受电压试验(断口)", "试验次数", "180次", calc_rule="拆分后断口雷电冲击耐受电压试验按180次。")
+    _set_if_present("雷电冲击耐受电压试验(相间及对地)", "试验次数", "270次", calc_rule="拆分后相间及对地雷电冲击耐受电压试验按270次。")
+
+    return updated_param_map, updated_value_map
+
+
+def _build_resolved_rule_overrides(
+    domain_rule_decisions: dict[str, Any],
+) -> dict[str, Any]:
+    resolved: dict[str, Any] = {}
+
+    def _format_voltage_value(value: float) -> str:
+        if float(value).is_integer():
+            return f"{int(value)} kV"
+        text = f"{value:.2f}".rstrip("0").rstrip(".")
+        return f"{text} kV"
+
+    for decision in domain_rule_decisions.values():
+        if not isinstance(decision, dict):
+            continue
+        rule_kind = str(decision.get("kind", "") or "")
+        test_item = str(decision.get("test_item", "") or "")
+        if not test_item:
+            continue
+
+        if rule_kind == "applicability":
+            resolved.setdefault(test_item, {})
+            resolved[test_item]["applicability"] = {
+                "decision": decision.get("decision"),
+                "reason_text": decision.get("reason_text", ""),
+            }
+            continue
+
+        if rule_kind == "count":
+            resolved.setdefault(test_item, {})
+            resolved[test_item]["parameter_overrides"] = resolved[test_item].get(
+                "parameter_overrides", {}
+            )
+            rule_inputs = decision.get("inputs", {}) if isinstance(decision, dict) else {}
+            rated_voltage_kv = (
+                float(rule_inputs.get("rated_voltage_kv"))
+                if isinstance(rule_inputs, dict)
+                and rule_inputs.get("rated_voltage_kv") is not None
+                else None
+            )
+            if test_item == "局部放电试验" and rated_voltage_kv is not None:
+                resolved[test_item]["parameter_overrides"]["预加电压"] = _format_voltage_value(
+                    round(rated_voltage_kv * 1.3, 2)
+                )
+                resolved[test_item]["parameter_overrides"]["预加时间"] = (
+                    "30s" if rated_voltage_kv == 40.5 else "60s"
+                )
+                resolved[test_item]["parameter_overrides"]["交流电压"] = _format_voltage_value(
+                    round(rated_voltage_kv * 1.1, 2)
+                )
+                resolved[test_item]["parameter_overrides"]["测量时间(min)"] = "1min"
+            resolved[test_item]["parameter_overrides"]["试验次数"] = decision.get(
+                "decision"
+            )
+            resolved[test_item]["count_reason"] = decision.get("reason_text", "")
+            continue
+
+        if rule_kind == "split":
+            if decision.get("enabled"):
+                resolved[test_item] = {
+                    "decision": "split",
+                    "remove_original": True,
+                    "outputs": decision.get("split_output", []),
+                    "reason_text": decision.get("reason_text", ""),
+                }
+            else:
+                resolved[test_item] = {
+                    "decision": "single",
+                    "single_output": decision.get("single_output", {}),
+                    "reason_text": decision.get("reason_text", ""),
+                }
+
+    return resolved
+
+
+def _build_final_test_item_scope(
+    project_param_map: dict[str, list[str]],
+    domain_rule_decisions: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    allowed_items = list(project_param_map.keys())
+    removed_items: list[str] = []
+
+    for decision in domain_rule_decisions.values():
+        if not isinstance(decision, dict):
+            continue
+        test_item = str(decision.get("test_item", "") or "").strip()
+        if not test_item:
+            continue
+        rule_kind = str(decision.get("kind", "") or "").strip()
+        if rule_kind == "applicability" and not decision.get("enabled"):
+            removed_items.append(test_item)
+        if rule_kind == "split" and decision.get("enabled"):
+            removed_items.append(test_item)
+
+    allowed_deduped = list(dict.fromkeys(item for item in allowed_items if item))
+    removed_deduped = [
+        item
+        for item in dict.fromkeys(item for item in removed_items if item)
+        if item not in allowed_deduped
+    ]
+    return allowed_deduped, removed_deduped
+
+
+def _filter_context_by_final_test_item_scope(
+    entities_context: list[dict],
+    relations_context: list[dict],
+    removed_test_items: list[str],
+) -> tuple[list[dict], list[dict]]:
+    removed_keys = {_normalize_text_key(item) for item in removed_test_items if item}
+    if not removed_keys:
+        return entities_context, relations_context
+
+    def _entity_name(entity: dict[str, Any]) -> str:
+        for key in ("entity", "entity_name", "name", "test_item"):
+            value = str(entity.get(key, "") or "").strip()
+            if value:
+                return value
+        return ""
+
+    filtered_entities = [
+        entity
+        for entity in entities_context
+        if _normalize_text_key(_entity_name(entity)) not in removed_keys
+    ]
+    filtered_relations = [
+        relation
+        for relation in relations_context
+        if _normalize_text_key(str(relation.get("entity1", "") or "").strip())
+        not in removed_keys
+        and _normalize_text_key(str(relation.get("entity2", "") or "").strip())
+        not in removed_keys
+    ]
+    return filtered_entities, filtered_relations
+
+
+def _should_bypass_query_cache(global_config: dict[str, Any] | None) -> bool:
+    cfg = global_config or {}
+    if cfg.get("kg_schema_mode") == "electrical_controlled":
+        return True
+    addon_params = cfg.get("addon_params", {}) or {}
+    schema_cfg = addon_params.get("electrical_schema", {}) or {}
+    return bool(schema_cfg)
+
+
+def _postprocess_electrical_markdown_response(
+    response_text: str,
+    raw_data: dict[str, Any] | None,
+) -> str:
+    if not response_text or not isinstance(raw_data, dict):
+        return response_text
+
+    metadata = raw_data.get("metadata", {}) if isinstance(raw_data, dict) else {}
+    allowed_items = metadata.get("allowed_final_test_items", []) or []
+    removed_items = metadata.get("removed_test_items", []) or []
+    value_map = metadata.get("project_param_value_map", {}) or {}
+    if not allowed_items and not removed_items:
+        return response_text
+
+    allowed_set = set(str(item).strip() for item in allowed_items if str(item).strip())
+    removed_set = set(str(item).strip() for item in removed_items if str(item).strip())
+
+    def _parse_sections(text: str) -> tuple[list[str], dict[str, list[str]]]:
+        lines = text.splitlines()
+        order: list[str] = []
+        sections: dict[str, list[str]] = {}
+        current = "__prefix__"
+        sections[current] = []
+        order.append(current)
+        for line in lines:
+            if line.startswith("### "):
+                current = line.strip()
+                sections.setdefault(current, [])
+                order.append(current)
+                continue
+            sections.setdefault(current, []).append(line)
+        return order, sections
+
+    def _filter_a_section(lines: list[str]) -> list[str]:
+        filtered: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                item = stripped[2:].strip()
+                if item in allowed_set and item not in removed_set:
+                    filtered.append(line)
+            else:
+                filtered.append(line)
+        return filtered
+
+    def _extract_test_name(heading_line: str) -> str | None:
+        match = re.match(r"^##\s*试验项目[:：]\s*(.+?)\s*$", heading_line.strip())
+        return match.group(1).strip() if match else None
+
+    def _rewrite_param_line(test_name: str, line: str) -> str:
+        match = re.match(r"^(\s*-\s*)([^：:]+)([：:])\s*(.+)$", line)
+        if not match:
+            return line
+        prefix, param_name, colon, remainder = match.groups()
+        param_name = param_name.strip()
+        param_values = value_map.get(test_name, {}) if isinstance(value_map, dict) else {}
+        entry = param_values.get(param_name, {}) if isinstance(param_values, dict) else {}
+        value_text = str(entry.get("value_text", "") or "").strip() if isinstance(entry, dict) else ""
+        if not value_text:
+            return line
+        suffix = ""
+        source = str(entry.get("value_source", "") or "").strip()
+        calc_rule = str(entry.get("calc_rule", "") or "").strip()
+        if source:
+            suffix += f"；source：{source}"
+        if calc_rule:
+            suffix += f"；calculation：{calc_rule}"
+        return f"{prefix}{param_name}{colon} {value_text}{suffix}"
+
+    def _filter_c_section(lines: list[str]) -> list[str]:
+        filtered: list[str] = []
+        current_block: list[str] = []
+        current_name: str | None = None
+
+        def _flush() -> None:
+            nonlocal current_block, current_name
+            if not current_block:
+                return
+            if current_name and current_name in allowed_set and current_name not in removed_set:
+                for block_line in current_block:
+                    if block_line.lstrip().startswith("- "):
+                        rewritten = _rewrite_param_line(current_name, block_line)
+                        if rewritten:
+                            filtered.append(rewritten)
+                    else:
+                        filtered.append(block_line)
+            elif current_name is None:
+                filtered.extend(current_block)
+            current_block = []
+            current_name = None
+
+        for line in lines:
+            if line.startswith("## "):
+                _flush()
+                current_name = _extract_test_name(line)
+                current_block = [line]
+            else:
+                current_block.append(line)
+        _flush()
+        return filtered
+
+    def _filter_d_section(lines: list[str]) -> list[str]:
+        filtered: list[str] = []
+        total_items: list[tuple[str, str]] = []
+        total_line: str | None = None
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("- ") and "试验次数：" in stripped:
+                item = stripped[2:].split("试验次数：", 1)[0].strip()
+                if item in allowed_set and item not in removed_set:
+                    filtered.append(line)
+                    total_items.append((item, stripped.split("试验次数：", 1)[1].strip()))
+                continue
+            if stripped.startswith("- 绝缘性能型式试验总次数："):
+                total_line = line
+                continue
+            filtered.append(line)
+        if total_items:
+            total = 0
+            parts: list[str] = []
+            for item, count_text in total_items:
+                count_match = re.search(r"([0-9]+)", count_text)
+                if not count_match:
+                    continue
+                count = int(count_match.group(1))
+                total += count
+                parts.append(str(count))
+            filtered.append(
+                f"- 绝缘性能型式试验总次数：{total}；calculation：{' + '.join(parts)} = {total}"
+            )
+        elif total_line:
+            filtered.append(total_line)
+        return filtered
+
+    order, sections = _parse_sections(response_text)
+    rebuilt: list[str] = []
+    for key in order:
+        if key == "__prefix__":
+            rebuilt.extend(sections.get(key, []))
+            continue
+        rebuilt.append(key)
+        section_lines = sections.get(key, [])
+        if key.startswith("### A."):
+            rebuilt.extend(_filter_a_section(section_lines))
+        elif key.startswith("### C."):
+            rebuilt.extend(_filter_c_section(section_lines))
+        elif key.startswith("### D."):
+            rebuilt.extend(_filter_d_section(section_lines))
+        else:
+            rebuilt.extend(section_lines)
+    return "\n".join(rebuilt)
+
+
+def _log_electrical_answer_debug(
+    stage: str,
+    raw_data: dict[str, Any] | None,
+    response_text: str | None = None,
+) -> None:
+    if not isinstance(raw_data, dict):
+        return
+    metadata = raw_data.get("metadata", {}) or {}
+    allowed_items = metadata.get("allowed_final_test_items", []) or []
+    removed_items = metadata.get("removed_test_items", []) or []
+    domain_rule_decisions = metadata.get("domain_rule_decisions", {}) or {}
+    rule_query_text = metadata.get("rule_query_text", "")
+    if not (allowed_items or removed_items or domain_rule_decisions or rule_query_text):
+        return
+
+    logger.info(
+        "[electrical_debug][%s] allowed_final_test_items=%s",
+        stage,
+        json.dumps(allowed_items, ensure_ascii=False),
+    )
+    logger.info(
+        "[electrical_debug][%s] removed_test_items=%s",
+        stage,
+        json.dumps(removed_items, ensure_ascii=False),
+    )
+    logger.info(
+        "[electrical_debug][%s] rule_query_text=%s",
+        stage,
+        rule_query_text,
+    )
+    logger.info(
+        "[electrical_debug][%s] domain_rule_decisions=%s",
+        stage,
+        json.dumps(domain_rule_decisions, ensure_ascii=False),
+    )
+    if response_text is not None:
+        logger.info(
+            "[electrical_debug][%s] response=%s",
+            stage,
+            response_text,
+        )
 
 
 def _truncate_entity_identifier(
@@ -6668,6 +7706,7 @@ async def kg_query(
     # Build query context (unified interface)
     context_result = await _build_query_context(
         retrieval_query,
+        query,
         ll_keywords_str,
         hl_keywords_str,
         knowledge_graph_inst,
@@ -6715,8 +7754,10 @@ async def kg_query(
     logger.debug(
         f"[kg_query] Sending to LLM: {len_of_prompts:,} tokens (Query: {len(tokenizer.encode(query))}, System: {len(tokenizer.encode(sys_prompt))})"
     )
+    _log_electrical_answer_debug("pre_llm", context_result.raw_data)
 
     # Handle cache
+    bypass_query_cache = _should_bypass_query_cache(global_config)
     args_hash = compute_args_hash(
         query_param.mode,
         query,
@@ -6732,9 +7773,13 @@ async def kg_query(
         query_param.enable_rerank,
     )
 
-    cached_result = await handle_cache(
-        hashing_kv, args_hash, user_query, query_param.mode, cache_type="query"
-    )
+    cached_result = None
+    if not bypass_query_cache:
+        cached_result = await handle_cache(
+            hashing_kv, args_hash, user_query, query_param.mode, cache_type="query"
+        )
+    else:
+        logger.info("[kg_query] Bypassing query cache for electrical controlled mode")
 
     if cached_result is not None:
         cached_response, _ = cached_result  # Extract content, ignore timestamp
@@ -6751,7 +7796,11 @@ async def kg_query(
             stream=query_param.stream,
         )
 
-        if hashing_kv and hashing_kv.global_config.get("enable_llm_cache"):
+        if (
+            not bypass_query_cache
+            and hashing_kv
+            and hashing_kv.global_config.get("enable_llm_cache")
+        ):
             queryparam_dict = {
                 "mode": query_param.mode,
                 "response_type": query_param.response_type,
@@ -6802,6 +7851,7 @@ async def kg_query(
                 )
                 second_context_result = await _build_query_context(
                     second_retrieval_query,
+                    query,
                     ll_keywords_str,
                     hl_keywords_str,
                     knowledge_graph_inst,
@@ -6835,6 +7885,20 @@ async def kg_query(
                                 .replace("</system>", "")
                                 .strip()
                             )
+                        _log_electrical_answer_debug(
+                            "second_before_postprocess",
+                            second_context_result.raw_data,
+                            response_2,
+                        )
+                        response_2 = _postprocess_electrical_markdown_response(
+                            _enforce_formula_consistency(response_2),
+                            second_context_result.raw_data,
+                        )
+                        _log_electrical_answer_debug(
+                            "second_after_postprocess",
+                            second_context_result.raw_data,
+                            response_2,
+                        )
                         if "metadata" not in second_context_result.raw_data:
                             second_context_result.raw_data["metadata"] = {}
                         second_context_result.raw_data["metadata"][
@@ -6854,10 +7918,24 @@ async def kg_query(
                             raw_data=second_context_result.raw_data,
                             is_streaming=True,
                         )
-
+        _log_electrical_answer_debug(
+            "before_postprocess",
+            context_result.raw_data,
+            response,
+        )
+        response = _postprocess_electrical_markdown_response(
+            _enforce_formula_consistency(response),
+            context_result.raw_data,
+        )
+        _log_electrical_answer_debug(
+            "after_postprocess",
+            context_result.raw_data,
+            response,
+        )
         return QueryResult(content=response, raw_data=context_result.raw_data)
     else:
         # Streaming response (AsyncIterator)
+        _log_electrical_answer_debug("stream_return", context_result.raw_data)
         return QueryResult(
             response_iterator=response,
             raw_data=context_result.raw_data,
@@ -7711,6 +8789,7 @@ async def _build_context_str(
     relations_context: list[dict],
     merged_chunks: list[dict],
     query: str,
+    rule_query: str | None,
     query_param: QueryParam,
     global_config: dict[str, str],
     chunk_tracking: dict = None,
@@ -7756,6 +8835,8 @@ async def _build_context_str(
         if query_param.response_type
         else "Multiple Paragraphs"
     )
+    addon_params = global_config.get("addon_params", {}) or {}
+    schema_cfg = addon_params.get("electrical_schema", {}) or {}
 
     def _extract_named_voltage_kv(query_text: str, labels: list[str]) -> float | None:
         text = str(query_text or "").strip()
@@ -7798,70 +8879,34 @@ async def _build_context_str(
             return False
         return bool(re.search(r"元件中含固封极柱", text))
 
-    pf_base_kv = _extract_named_voltage_kv(
-        query, ["额定短时工频耐受电压", "额定工频耐受电压"]
+    rule_query_text = str(rule_query or query or "").strip()
+    model_prefix = _extract_model_prefix(rule_query_text)
+    rated_current_amp = _extract_rated_current_amp(rule_query_text)
+    rated_voltage_kv = _extract_rated_voltage_kv(rule_query_text)
+    explicit_solid_sealed_pole = _query_has_explicit_solid_sealed_pole(rule_query_text)
+    domain_rule_decisions = _evaluate_domain_rule_decisions(rule_query_text, schema_cfg)
+    pf_split_rule = domain_rule_decisions.get("insulation.gb.power_frequency_split", {})
+    li_split_rule = domain_rule_decisions.get("insulation.gb.lightning_impulse_split", {})
+    pd_app_rule = domain_rule_decisions.get(
+        "insulation.gb.partial_discharge_applicability", {}
     )
-    pf_fracture_kv = _extract_named_voltage_kv(
-        query, ["额定短时工频耐受电压(断口)", "额定工频耐受电压(断口)"]
-    )
-    li_base_kv = _extract_named_voltage_kv(query, ["额定雷电冲击耐受电压"])
-    li_fracture_kv = _extract_named_voltage_kv(query, ["额定雷电冲击耐受电压(断口)"])
 
-    fracture_pf_provided = pf_fracture_kv is not None
-    fracture_li_provided = li_fracture_kv is not None
-    fracture_pf_enabled = bool(
-        pf_fracture_kv is not None and pf_base_kv is not None and pf_fracture_kv > pf_base_kv
-    )
-    fracture_li_enabled = bool(
-        li_fracture_kv is not None and li_base_kv is not None and li_fracture_kv > li_base_kv
-    )
-    model_prefix = _extract_model_prefix(query)
-    rated_current_amp = _extract_rated_current_amp(query)
-    rated_voltage_kv = _extract_rated_voltage_kv(query)
-    explicit_solid_sealed_pole = _query_has_explicit_solid_sealed_pole(query)
+    pf_split_inputs = pf_split_rule.get("inputs", {}) if isinstance(pf_split_rule, dict) else {}
+    li_split_inputs = li_split_rule.get("inputs", {}) if isinstance(li_split_rule, dict) else {}
+    pd_app_inputs = pd_app_rule.get("inputs", {}) if isinstance(pd_app_rule, dict) else {}
 
-    pd_allowed_by_voltage = rated_voltage_kv == 40.5
+    fracture_pf_enabled = bool(pf_split_rule.get("enabled")) if isinstance(pf_split_rule, dict) else False
+    fracture_li_enabled = bool(li_split_rule.get("enabled")) if isinstance(li_split_rule, dict) else False
+    fracture_pf_provided = bool(pf_split_inputs.get("fracture_voltage_provided")) if isinstance(pf_split_inputs, dict) else False
+    fracture_li_provided = bool(li_split_inputs.get("fracture_voltage_provided")) if isinstance(li_split_inputs, dict) else False
+    pd_allowed = bool(pd_app_rule.get("enabled")) if isinstance(pd_app_rule, dict) else False
+    pd_allowed_by_voltage = bool(rated_voltage_kv == 40.5)
     pd_allowed_by_model = bool(
-        model_prefix
-        and model_prefix != "VF1"
-        and rated_current_amp == 4000
+        model_prefix and model_prefix != "VF1" and rated_current_amp == 4000
     )
-    pd_allowed = explicit_solid_sealed_pole or pd_allowed_by_model or pd_allowed_by_voltage
-
-    auto_query_instructions: list[str] = []
-    if not fracture_pf_enabled:
-        auto_query_instructions.append(
-            "系统约束：只有当额定短时工频耐受电压(断口)严格大于额定短时工频耐受电压时，才允许输出`工频耐受电压试验(断口)`与`工频耐受电压试验(相间及对地)`拆分项目；否则只能输出未拆分的`工频耐受电压试验`。"
-        )
-    if not fracture_li_enabled:
-        auto_query_instructions.append(
-            "系统约束：只有当额定雷电冲击耐受电压(断口)严格大于额定雷电冲击耐受电压时，才允许输出`雷电冲击耐受电压试验(断口)`与`雷电冲击耐受电压试验(相间及对地)`拆分项目；否则只能输出未拆分的`雷电冲击耐受电压试验`。"
-        )
-    if pd_allowed:
-        if explicit_solid_sealed_pole:
-            auto_query_instructions.append(
-                "系统约束：用户已明确提供`元件中含固封极柱`，必须输出`局部放电试验`。"
-            )
-        elif pd_allowed_by_voltage:
-            auto_query_instructions.append(
-                "系统约束：当额定电压精确等于`40.5kV`时，必须输出`局部放电试验`；其试验次数按无断口局放口径执行为`3次`，不得因为断口工频/雷电参数而改成9次。"
-            )
-        else:
-            auto_query_instructions.append(
-                "系统约束：仅因型号前缀不是`VF1`且额定电流精确等于`4000A`，必须按业务规则输出`局部放电试验`；不得将`3150A`、`2500A`、`2000A`、`1600A`、`1250A`、`630A`或“接近4000A”视为命中。"
-            )
-    else:
-        auto_query_instructions.append(
-            "系统约束：禁止输出`局部放电试验`。只有两种情况允许输出：1) 用户明确提供`元件中含固封极柱`；2) 型号前缀不是`VF1`且额定电流精确等于`4000A`。`固封式`、`真空断路器`、`真空灭弧室`、`户内高压真空断路器`、`接近4000A`、`3150A`等都不能触发局部放电试验。"
-        )
-    if auto_query_instructions:
-        auto_instruction_block = "System-Enforced Query Constraints:\n" + "\n".join(
-            f"- {instruction}" for instruction in auto_query_instructions
-        )
-        user_prompt = (
-            f"{user_prompt}\n\n{auto_instruction_block}"
-            if user_prompt
-            else auto_instruction_block
+    if isinstance(pd_app_inputs, dict):
+        explicit_solid_sealed_pole = bool(
+            pd_app_inputs.get("explicit_solid_sealed_pole", explicit_solid_sealed_pole)
         )
 
     async def _build_project_param_context() -> tuple[
@@ -7873,8 +8918,6 @@ async def _build_context_str(
         if knowledge_graph_inst is None:
             return {}, {}
 
-        addon_params = global_config.get("addon_params", {}) or {}
-        schema_cfg = addon_params.get("electrical_schema", {}) or {}
         configured_test_items = schema_cfg.get("test_items", []) or []
         configured_param_requirements = (
             schema_cfg.get("test_item_param_requirements", {}) or {}
@@ -7942,23 +8985,6 @@ async def _build_context_str(
                 params = _get_config_required_params(str(test_name))
                 if params:
                     fallback_map[str(test_name)] = params
-            if fracture_pf_enabled and "工频耐受电压试验" in fallback_map:
-                fallback_map["工频耐受电压试验(断口)"] = list(
-                    fallback_map["工频耐受电压试验"]
-                )
-                fallback_map["工频耐受电压试验(相间及对地)"] = list(
-                    fallback_map["工频耐受电压试验"]
-                )
-            if fracture_li_enabled and "雷电冲击耐受电压试验" in fallback_map:
-                fallback_map["雷电冲击耐受电压试验(断口)"] = list(
-                    fallback_map["雷电冲击耐受电压试验"]
-                )
-                fallback_map["雷电冲击耐受电压试验(相间及对地)"] = list(
-                    fallback_map["雷电冲击耐受电压试验"]
-                )
-            if "电寿命试验" in fallback_map:
-                for split_name in ("电寿命(单分)", "电寿命(合分)", "电寿命(循环)"):
-                    fallback_map[split_name] = list(fallback_map["电寿命试验"])
             return fallback_map, {}
 
         project_param_map: dict[str, list[str]] = {}
@@ -8050,47 +9076,26 @@ async def _build_context_str(
                 params = _get_config_required_params(str(test_name))
                 if params:
                     fallback_map[str(test_name)] = params
-            if fracture_pf_enabled and "工频耐受电压试验" in fallback_map:
-                fallback_map["工频耐受电压试验(断口)"] = list(
-                    fallback_map["工频耐受电压试验"]
-                )
-                fallback_map["工频耐受电压试验(相间及对地)"] = list(
-                    fallback_map["工频耐受电压试验"]
-                )
-            if fracture_li_enabled and "雷电冲击耐受电压试验" in fallback_map:
-                fallback_map["雷电冲击耐受电压试验(断口)"] = list(
-                    fallback_map["雷电冲击耐受电压试验"]
-                )
-                fallback_map["雷电冲击耐受电压试验(相间及对地)"] = list(
-                    fallback_map["雷电冲击耐受电压试验"]
-                )
-            if "电寿命试验" in fallback_map:
-                for split_name in ("电寿命(单分)", "电寿命(合分)", "电寿命(循环)"):
-                    fallback_map[split_name] = list(fallback_map["电寿命试验"])
             return fallback_map, {}
-
-        def _inherit_split_param_map(target_name: str, source_name: str) -> None:
-            source_params = project_param_map.get(source_name, [])
-            if not source_params:
-                return
-            project_param_map[target_name] = list(source_params)
-
-        if fracture_pf_enabled:
-            _inherit_split_param_map("工频耐受电压试验(断口)", "工频耐受电压试验")
-            _inherit_split_param_map(
-                "工频耐受电压试验(相间及对地)", "工频耐受电压试验"
-            )
-        if fracture_li_enabled:
-            _inherit_split_param_map("雷电冲击耐受电压试验(断口)", "雷电冲击耐受电压试验")
-            _inherit_split_param_map(
-                "雷电冲击耐受电压试验(相间及对地)", "雷电冲击耐受电压试验"
-            )
-        if "电寿命试验" in project_param_map:
-            for split_name in ("电寿命(单分)", "电寿命(合分)", "电寿命(循环)"):
-                _inherit_split_param_map(split_name, "电寿命试验")
         return project_param_map, project_param_value_map
 
     project_param_map, project_param_value_map = await _build_project_param_context()
+    project_param_map, project_param_value_map = _apply_domain_rule_decisions_to_project_context(
+        project_param_map,
+        project_param_value_map,
+        domain_rule_decisions,
+        rule_query_text,
+    )
+    resolved_rule_overrides = _build_resolved_rule_overrides(domain_rule_decisions)
+    allowed_final_test_items, removed_test_items = _build_final_test_item_scope(
+        project_param_map,
+        domain_rule_decisions,
+    )
+    entities_context, relations_context = _filter_context_by_final_test_item_scope(
+        entities_context,
+        relations_context,
+        removed_test_items,
+    )
     project_param_map_str = (
         json.dumps(project_param_map, ensure_ascii=False, indent=2)
         if project_param_map
@@ -8100,6 +9105,26 @@ async def _build_context_str(
         json.dumps(project_param_value_map, ensure_ascii=False, indent=2)
         if project_param_value_map
         else "{}"
+    )
+    domain_rule_decisions_str = (
+        json.dumps(domain_rule_decisions, ensure_ascii=False, indent=2)
+        if domain_rule_decisions
+        else "{}"
+    )
+    resolved_rule_overrides_str = (
+        json.dumps(resolved_rule_overrides, ensure_ascii=False, indent=2)
+        if resolved_rule_overrides
+        else "{}"
+    )
+    allowed_final_test_items_str = (
+        json.dumps(allowed_final_test_items, ensure_ascii=False, indent=2)
+        if allowed_final_test_items
+        else "[]"
+    )
+    removed_test_items_str = (
+        json.dumps(removed_test_items, ensure_ascii=False, indent=2)
+        if removed_test_items
+        else "[]"
     )
 
     entities_str = "\n".join(
@@ -8115,6 +9140,10 @@ async def _build_context_str(
         relations_str=relations_str,
         project_param_map_str=project_param_map_str,
         project_param_value_map_str=project_param_value_map_str,
+        domain_rule_decisions_str=domain_rule_decisions_str,
+        resolved_rule_overrides_str=resolved_rule_overrides_str,
+        allowed_final_test_items_str=allowed_final_test_items_str,
+        removed_test_items_str=removed_test_items_str,
         text_chunks_str="",
         reference_list_str="",
     )
@@ -8150,6 +9179,8 @@ async def _build_context_str(
             relations_str=relations_str,
             project_param_map_str=project_param_map_str,
             project_param_value_map_str=project_param_value_map_str,
+            domain_rule_decisions_str=domain_rule_decisions_str,
+            resolved_rule_overrides_str=resolved_rule_overrides_str,
             text_chunks_str="",
             reference_list_str="",
         )
@@ -8247,6 +9278,10 @@ async def _build_context_str(
         relations_str=relations_str,
         project_param_map_str=project_param_map_str,
         project_param_value_map_str=project_param_value_map_str,
+        domain_rule_decisions_str=domain_rule_decisions_str,
+        resolved_rule_overrides_str=resolved_rule_overrides_str,
+        allowed_final_test_items_str=allowed_final_test_items_str,
+        removed_test_items_str=removed_test_items_str,
         text_chunks_str=text_units_str,
         reference_list_str=reference_list_str,
     )
@@ -8268,6 +9303,11 @@ async def _build_context_str(
         final_data["metadata"] = {}
     final_data["metadata"]["project_param_map"] = project_param_map
     final_data["metadata"]["project_param_value_map"] = project_param_value_map
+    final_data["metadata"]["rule_query_text"] = rule_query_text
+    final_data["metadata"]["domain_rule_decisions"] = domain_rule_decisions
+    final_data["metadata"]["resolved_rule_overrides"] = resolved_rule_overrides
+    final_data["metadata"]["allowed_final_test_items"] = allowed_final_test_items
+    final_data["metadata"]["removed_test_items"] = removed_test_items
     final_data["metadata"]["project_split_rules"] = {
         "pf_fracture_enabled": fracture_pf_enabled,
         "li_fracture_enabled": fracture_li_enabled,
@@ -8287,6 +9327,7 @@ async def _build_context_str(
 # Now let's update the old _build_query_context to use the new architecture
 async def _build_query_context(
     query: str,
+    rule_query: str | None,
     ll_keywords: str,
     hl_keywords: str,
     knowledge_graph_inst: BaseGraphStorage,
@@ -8368,6 +9409,7 @@ async def _build_query_context(
         relations_context=truncation_result["relations_context"],
         merged_chunks=merged_chunks,
         query=query,
+        rule_query=rule_query,
         query_param=query_param,
         global_config=text_chunks_db.global_config,
         chunk_tracking=search_result["chunk_tracking"],
@@ -9171,6 +10213,8 @@ async def naive_query(
         return QueryResult(content=prompt_content, raw_data=raw_data)
 
     # Handle cache
+    _log_electrical_answer_debug("naive_pre_llm", raw_data)
+    bypass_query_cache = _should_bypass_query_cache(global_config)
     args_hash = compute_args_hash(
         query_param.mode,
         query,
@@ -9183,9 +10227,13 @@ async def naive_query(
         query_param.user_prompt or "",
         query_param.enable_rerank,
     )
-    cached_result = await handle_cache(
-        hashing_kv, args_hash, user_query, query_param.mode, cache_type="query"
-    )
+    cached_result = None
+    if not bypass_query_cache:
+        cached_result = await handle_cache(
+            hashing_kv, args_hash, user_query, query_param.mode, cache_type="query"
+        )
+    else:
+        logger.info("[naive_query] Bypassing query cache for electrical controlled mode")
     if cached_result is not None:
         cached_response, _ = cached_result  # Extract content, ignore timestamp
         logger.info(
@@ -9201,7 +10249,11 @@ async def naive_query(
             stream=query_param.stream,
         )
 
-        if hashing_kv and hashing_kv.global_config.get("enable_llm_cache"):
+        if (
+            not bypass_query_cache
+            and hashing_kv
+            and hashing_kv.global_config.get("enable_llm_cache")
+        ):
             queryparam_dict = {
                 "mode": query_param.mode,
                 "response_type": query_param.response_type,
@@ -9240,11 +10292,17 @@ async def naive_query(
                 .strip()
             )
 
-        response = _enforce_formula_consistency(response)
+        _log_electrical_answer_debug("naive_before_postprocess", raw_data, response)
+        response = _postprocess_electrical_markdown_response(
+            _enforce_formula_consistency(response),
+            raw_data,
+        )
+        _log_electrical_answer_debug("naive_after_postprocess", raw_data, response)
 
         return QueryResult(content=response, raw_data=raw_data)
     else:
         # Streaming response (AsyncIterator)
+        _log_electrical_answer_debug("naive_stream_return", raw_data)
         return QueryResult(
             response_iterator=response, raw_data=raw_data, is_streaming=True
         )

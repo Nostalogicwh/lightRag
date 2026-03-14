@@ -307,6 +307,17 @@ Consider the conversation history if provided to maintain conversational flow an
 
 2. Content & Grounding:
   - Strictly adhere to the provided context from the **Context**; DO NOT invent, assume, or infer any information not explicitly stated.
+  - `Domain Rule Decisions` is the highest-priority business decision source for applicability, split/merge, count, and override logic.
+  - `Resolved Rule Overrides` is the highest-priority final answer sheet distilled from `Domain Rule Decisions`. If a parameter or output structure appears there, you MUST use it exactly as the final answer.
+  - `Allowed Final Test Items` is the final whitelist for A/C/D sections. Section A MUST contain exactly that set of test items, no more and no less. Sections C/D MUST cover only those same items.
+  - `Removed Test Items` is the final deny-list for A/C/D sections. You MUST NOT output any test item from that list, even if it appears in document chunks or graph entities.
+  - If `Domain Rule Decisions` provides a decision for a test item, you MUST obey it even when document chunks, standard prose, or other graph hints suggest a different tendency.
+  - For `kind=applicability`, if decision is `deny`, you MUST NOT output that test item; if decision is `allow`, you MAY output it only according to the decided rule scope.
+  - `kind=applicability` only decides whether a test item should appear. It MUST NOT be reused as the basis for `试验次数` unless a separate `kind=count` rule explicitly says so.
+  - For `kind=split`, you MUST follow the decided `single_output` or `split_output`; do not keep the original unsplit item when decision is `split`, and do not invent split items when decision is `single`.
+  - For `kind=count`, the decided value is the final count answer. You MUST use that exact count and MUST NOT replace it with other reasoning from model intuition, device-type assumptions, or chunk prose.
+  - If a split rule removes an original item, you MUST ignore the original unsplit item even when document chunks still mention it.
+  - For each retained test item, you MUST only output parameters listed under `PROJECT_PARAM_MAP[test_item]`. Do not invent extra parameters, do not copy parameters from removed items, and do not reuse conditional graph prose as final values when a rule override already resolved the item.
   - `PROJECT_PARAM_VALUE_MAP` is the highest-priority graph answer key for parameter values, but you MUST obey its `resolution_mode`.
   - If `resolution_mode=graph_final` and `value_text` is non-empty, you MUST use that value as the final answer and MUST NOT override it with document chunks, business defaults, device-type assumptions, or general reasoning.
   - If `resolution_mode=needs_user_input`, you MUST combine the graph rule/value hint with the user's explicit device inputs and output the resolved final value instead of repeating the graph hint text.
@@ -318,6 +329,7 @@ Consider the conversation history if provided to maintain conversational flow an
   - The response MUST be in the same language as the user query.
   - The response MUST utilize Markdown formatting for enhanced clarity and structure (e.g., headings, bold text, bullet points).
   - The response should be presented in {response_type}.
+  - Additional Instructions are format/output constraints only. They MUST NOT override `Resolved Rule Overrides`, `Domain Rule Decisions`, or `PROJECT_PARAM_VALUE_MAP`.
   - If Additional Instructions specify required fields/parameters, you MUST output all of them. If any value is missing in the context, output "无法确定" for that field and cite the missing source in the References.
 
 4. References Section Format:
@@ -337,7 +349,7 @@ Consider the conversation history if provided to maintain conversational flow an
 - [3] Document Title Three
 ```
 
-6. Additional Instructions: {user_prompt}
+6. Additional Instructions (lower priority than rule decisions and graph final values; format/output only): {user_prompt}
 
 
 ---Context---
@@ -373,6 +385,7 @@ Consider the conversation history if provided to maintain conversational flow an
   - The response MUST be in the same language as the user query.
   - The response MUST utilize Markdown formatting for enhanced clarity and structure (e.g., headings, bold text, bullet points).
   - The response should be presented in {response_type}.
+  - Additional Instructions are format/output constraints only. They MUST NOT introduce or override business rules.
   - If Additional Instructions specify required fields/parameters, you MUST output all of them. If any value is missing in the context, output "无法确定" for that field and cite the missing source in the References.
 
 4. References Section Format:
@@ -392,7 +405,7 @@ Consider the conversation history if provided to maintain conversational flow an
 - [3] Document Title Three
 ```
 
-6. Additional Instructions: {user_prompt}
+6. Additional Instructions (format/output only): {user_prompt}
 
 
 ---Context---
@@ -423,6 +436,30 @@ Graph Parameter Values (PROJECT_PARAM_VALUE_MAP):
 
 ```json
 {project_param_value_map_str}
+```
+
+Domain Rule Decisions:
+
+```json
+{domain_rule_decisions_str}
+```
+
+Resolved Rule Overrides:
+
+```json
+{resolved_rule_overrides_str}
+```
+
+Allowed Final Test Items:
+
+```json
+{allowed_final_test_items_str}
+```
+
+Removed Test Items:
+
+```json
+{removed_test_items_str}
 ```
 
 Document Chunks (Each entry has a reference_id refer to the `Reference Document List`):

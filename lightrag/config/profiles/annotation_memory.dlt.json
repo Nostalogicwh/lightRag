@@ -6023,11 +6023,11 @@
         },
         {
           "param_name": "介质性质",
-          "value_text": "正常或充气充油，默认正常",
-          "value_expr": "正常或充气充油，默认正常",
+          "value_text": "正常或充气/充油，默认为正常",
+          "value_expr": "正常或充气/充油，默认为正常",
           "value_source": "default",
           "value_type": "default",
-          "constraints": "正常或充气充油，默认正常",
+          "constraints": "正常或充气/充油，默认为正常",
           "calc_rule": "",
           "derive_from_rated": ""
         },
@@ -6070,11 +6070,11 @@
       "parameters": [
         {
           "param_name": "雷电冲击干耐受电压",
-          "value_text": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
-          "value_expr": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
+          "value_text": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
+          "value_expr": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
           "value_source": "standard",
           "value_type": "standard",
-          "constraints": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
+          "constraints": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
           "calc_rule": "",
           "derive_from_rated": ""
         },
@@ -6110,11 +6110,11 @@
         },
         {
           "param_name": "介质性质",
-          "value_text": "正常或充气充油，默认正常",
-          "value_expr": "正常或充气充油，默认正常",
+          "value_text": "正常或充气/充油，默认为正常",
+          "value_expr": "正常或充气/充油，默认为正常",
           "value_source": "default",
           "value_type": "default",
-          "constraints": "正常或充气充油，默认正常",
+          "constraints": "正常或充气/充油，默认为正常",
           "calc_rule": "",
           "derive_from_rated": ""
         },
@@ -6297,7 +6297,7 @@
       ],
       "path_key": "型式试验 > 绝缘性能型式试验 > 局部放电试验",
       "skip": false,
-      "note": "局部放电测量",
+      "note": "试验项目名称改为局部放电测量",
       "parameters": [
         {
           "param_name": "局部放电值",
@@ -6341,21 +6341,21 @@
         },
         {
           "param_name": "试验次数",
-          "value_text": "用户输入含有断口电压的时候，需要做15次，当不含断口做3次 / 用户输入包含工频耐受电压(断口) 或 额定雷电冲击耐受电压(断口) 做 9次，否则为 3次",
-          "value_expr": "",
+          "value_text": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
+          "value_expr": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
           "value_source": "user_input",
           "value_type": "user_input",
-          "constraints": "",
+          "constraints": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
           "calc_rule": "",
-          "derive_from_rated": ""
+          "derive_from_rated": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次"
         },
         {
           "param_name": "介质性质",
-          "value_text": "正常或充气/充油，默认为正常 / 正常或充气/充油，默认为正常",
-          "value_expr": "",
+          "value_text": "正常或充气/充油，默认为正常",
+          "value_expr": "正常或充气/充油，默认为正常",
           "value_source": "default",
           "value_type": "default",
-          "constraints": "",
+          "constraints": "正常或充气/充油，默认为正常",
           "calc_rule": "",
           "derive_from_rated": ""
         },
@@ -7121,11 +7121,11 @@
         },
         {
           "param_name": "开合容性电流能力的级别",
-          "value_text": "C1或C2",
-          "value_expr": "C1或C2",
+          "value_text": "C1或C2，用户未输入默认C2",
+          "value_expr": "C1或C2，用户未输入默认C2",
           "value_source": "default",
           "value_type": "default",
-          "constraints": "C1或C2",
+          "constraints": "C1或C2，用户未输入默认C2",
           "calc_rule": "",
           "derive_from_rated": ""
         }
@@ -7646,13 +7646,13 @@
         },
         {
           "param_name": "试验电流kA",
-          "value_text": "用户输入额定短路开断电流",
-          "value_expr": "10%用户输入额定短路开断电流",
-          "value_source": "user_input",
-          "value_type": "user_input",
-          "constraints": "10%用户输入额定短路开断电流",
-          "calc_rule": "",
-          "derive_from_rated": "10%用户输入额定短路开断电流"
+          "value_text": "30%用户输入额定短路开断电流",
+          "value_expr": "30%用户输入额定短路开断电流",
+          "value_source": "formula",
+          "value_type": "formula",
+          "constraints": "30%用户输入额定短路开断电流",
+          "calc_rule": "30%用户输入额定短路开断电流",
+          "derive_from_rated": ""
         },
         {
           "param_name": "操作顺序",
@@ -8874,7 +8874,7 @@
         ],
         "path_key": "型式试验 > 绝缘性能型式试验 > 局部放电试验",
         "skip": false,
-        "note": "局部放电测量",
+        "note": "试验项目名称改为局部放电测量",
         "parameters": [
           {
             "param_name": "局部放电值",
@@ -8918,21 +8918,21 @@
           },
           {
             "param_name": "试验次数",
-            "value_text": "用户输入含有断口电压的时候，需要做15次，当不含断口做3次 / 用户输入包含工频耐受电压(断口) 或 额定雷电冲击耐受电压(断口) 做 9次，否则为 3次",
-            "value_expr": "",
+            "value_text": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
+            "value_expr": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
             "value_source": "user_input",
             "value_type": "user_input",
-            "constraints": "",
+            "constraints": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次",
             "calc_rule": "",
-            "derive_from_rated": ""
+            "derive_from_rated": "用户输入包含工频耐受电压(断口) 并且 工频耐受电压(断口)的值大于 工频耐受电压的值 或 额定雷电冲击耐受电压(断口) 并且 额定雷电冲击耐受电压(断口)的值大于 额定雷电冲击耐受电压的值 做9次，否则为3次"
           },
           {
             "param_name": "介质性质",
-            "value_text": "正常或充气/充油，默认为正常 / 正常或充气/充油，默认为正常",
-            "value_expr": "",
+            "value_text": "正常或充气/充油，默认为正常",
+            "value_expr": "正常或充气/充油，默认为正常",
             "value_source": "default",
             "value_type": "default",
-            "constraints": "",
+            "constraints": "正常或充气/充油，默认为正常",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -9277,11 +9277,11 @@
           },
           {
             "param_name": "介质性质",
-            "value_text": "正常或充气充油，默认正常",
-            "value_expr": "正常或充气充油，默认正常",
+            "value_text": "正常或充气/充油，默认为正常",
+            "value_expr": "正常或充气/充油，默认为正常",
             "value_source": "default",
             "value_type": "default",
-            "constraints": "正常或充气充油，默认正常",
+            "constraints": "正常或充气/充油，默认为正常",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -9423,11 +9423,11 @@
         "parameters": [
           {
             "param_name": "雷电冲击干耐受电压",
-            "value_text": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
-            "value_expr": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
+            "value_text": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
+            "value_expr": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
             "value_source": "standard",
             "value_type": "standard",
-            "constraints": "按额定电压选取（通用/隔离）：3.6kV=40/46，7.2kV=60/70，12kV=75/85，24kV=95/115或125/145，40.5kV=185/215，72.5kV=325/380（断口+59），126kV=450/550（断口+103），252kV=950/1050（断口+206），363kV=1050/1175（断口+205），550kV=1550/1675（断口+315），800kV=1950/2100（断口+455），1100kV=2250/2400（断口+630）kV。",
+            "constraints": "按表1（范围I）与表4（范围II）额定雷电冲击耐受电压选取",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -9463,11 +9463,11 @@
           },
           {
             "param_name": "介质性质",
-            "value_text": "正常或充气充油，默认正常",
-            "value_expr": "正常或充气充油，默认正常",
+            "value_text": "正常或充气/充油，默认为正常",
+            "value_expr": "正常或充气/充油，默认为正常",
             "value_source": "default",
             "value_type": "default",
-            "constraints": "正常或充气充油，默认正常",
+            "constraints": "正常或充气/充油，默认为正常",
             "calc_rule": "",
             "derive_from_rated": ""
           },
@@ -12402,11 +12402,11 @@
           },
           {
             "param_name": "开合容性电流能力的级别",
-            "value_text": "C1或C2",
-            "value_expr": "C1或C2",
+            "value_text": "C1或C2，用户未输入默认C2",
+            "value_expr": "C1或C2，用户未输入默认C2",
             "value_source": "default",
             "value_type": "default",
-            "constraints": "C1或C2",
+            "constraints": "C1或C2，用户未输入默认C2",
             "calc_rule": "",
             "derive_from_rated": ""
           }
@@ -15261,13 +15261,13 @@
           },
           {
             "param_name": "试验电流kA",
-            "value_text": "用户输入额定短路开断电流",
-            "value_expr": "10%用户输入额定短路开断电流",
-            "value_source": "user_input",
-            "value_type": "user_input",
-            "constraints": "10%用户输入额定短路开断电流",
-            "calc_rule": "",
-            "derive_from_rated": "10%用户输入额定短路开断电流"
+            "value_text": "30%用户输入额定短路开断电流",
+            "value_expr": "30%用户输入额定短路开断电流",
+            "value_source": "formula",
+            "value_type": "formula",
+            "constraints": "30%用户输入额定短路开断电流",
+            "calc_rule": "30%用户输入额定短路开断电流",
+            "derive_from_rated": ""
           },
           {
             "param_name": "操作顺序",
@@ -18188,7 +18188,7 @@
       "report_type": "型式试验",
       "aliases": [],
       "acceptance_criteria": "",
-      "note": "缺少作为状态检查的工频耐受电压试验，特征值包含交流电压(额定工频耐受电压值的80%)、试验时间(1min)、试验相数(40.5kV及以下默认为三相)、介质性质(正常或充气充油，默认正常)、正常次数(6次)",
+      "note": "缺少作为状态检查的工频耐受电压试验 ， 特征值包含 交流电压(额定工频耐受电压值的80%)、试验时间(1min)、试验相数(40.5kV及以下默认为三相)、介质性质(正常或充气充油，默认正常)、正常次数(6次)",
       "confidence": 1.0,
       "required_reports": [
         {
@@ -18240,11 +18240,11 @@
         },
         {
           "param_name": "正常次数",
-          "value_text": "6",
+          "value_text": "6次",
           "value_expr": "",
           "value_source": "standard",
           "value_type": "standard",
-          "constraints": "6",
+          "constraints": "6次",
           "calc_rule": "",
           "derive_from_rated": ""
         }
@@ -18257,7 +18257,7 @@
       "report_type": "型式试验",
       "aliases": [],
       "acceptance_criteria": "",
-      "note": "缺少空载特性测量，特征值包含试验次数(1，默认1次)",
+      "note": "缺少空载特性测量  ，特征值包含 试验次数(1，默认1次)",
       "confidence": 1.0,
       "required_reports": [
         {
@@ -18271,9 +18271,9 @@
           "param_name": "试验次数",
           "value_text": "1次",
           "value_expr": "",
-          "value_source": "standard",
-          "value_type": "standard",
-          "constraints": "1次",
+          "value_source": "default",
+          "value_type": "default",
+          "constraints": "默认1次",
           "calc_rule": "",
           "derive_from_rated": ""
         }

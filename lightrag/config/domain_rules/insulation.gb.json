@@ -1,0 +1,260 @@
+{
+  "rules": [
+    {
+      "rule_id": "insulation.gb.power_frequency_split",
+      "domain": "insulation",
+      "kind": "split",
+      "standard": "gb",
+      "test_item": "工频耐受电压试验",
+      "status": "active",
+      "inputs": {
+        "base_voltage_labels": [
+          "额定短时工频耐受电压",
+          "额定工频耐受电压"
+        ],
+        "fracture_voltage_labels": [
+          "额定短时工频耐受电压(断口)",
+          "额定工频耐受电压(断口)"
+        ]
+      },
+      "single_output": {
+        "test_item": "工频耐受电压试验",
+        "parameter_overrides": {
+          "试验部位": "相间、对地及断口",
+          "试验次数": "9次"
+        }
+      },
+      "split_output": [
+        {
+          "test_item": "工频耐受电压试验(断口)",
+          "inherits_from": "工频耐受电压试验",
+          "parameter_overrides": {
+            "试验部位": "开关断口"
+          }
+        },
+        {
+          "test_item": "工频耐受电压试验(相间及对地)",
+          "inherits_from": "工频耐受电压试验",
+          "parameter_overrides": {
+            "试验部位": "相间及对地"
+          }
+        }
+      ]
+    },
+    {
+      "rule_id": "insulation.gb.power_frequency_outdoor_state_split",
+      "domain": "insulation",
+      "kind": "split",
+      "standard": "gb",
+      "test_item": "工频耐受电压试验",
+      "status": "active",
+      "inputs": {
+        "trigger_when_any": [
+          {
+            "source": "query",
+            "type": "contains",
+            "label": "户外产品"
+          },
+          {
+            "source": "query",
+            "type": "contains",
+            "label": "户外"
+          }
+        ]
+      },
+      "single_output": {
+        "test_item": "工频耐受电压试验",
+        "parameter_overrides": {
+          "试验状态": "干"
+        }
+      },
+      "split_output": [
+        {
+          "test_item": "工频耐受电压试验(干)",
+          "inherits_from": "工频耐受电压试验",
+          "parameter_overrides": {
+            "试验状态": "干"
+          }
+        },
+        {
+          "test_item": "工频耐受电压试验(湿)",
+          "inherits_from": "工频耐受电压试验",
+          "parameter_overrides": {
+            "试验状态": "湿"
+          }
+        }
+      ]
+    },
+    {
+      "rule_id": "insulation.gb.lightning_impulse_split",
+      "domain": "insulation",
+      "kind": "split",
+      "standard": "gb",
+      "status": "active",
+      "test_item": "雷电冲击耐受电压试验",
+      "inputs": {
+        "base_voltage_labels": [
+          "额定雷电冲击耐受电压"
+        ],
+        "fracture_voltage_labels": [
+          "额定雷电冲击耐受电压(断口)"
+        ]
+      },
+      "single_output": {
+        "test_item": "雷电冲击耐受电压试验",
+        "parameter_overrides": {
+          "试验部位": "相间、对地及断口",
+          "试验次数": "270次"
+        }
+      },
+      "split_output": [
+        {
+          "test_item": "雷电冲击耐受电压试验(断口)",
+          "inherits_from": "雷电冲击耐受电压试验",
+          "parameter_overrides": {
+            "试验部位": "开关断口",
+            "试验次数": "180次"
+          }
+        },
+        {
+          "test_item": "雷电冲击耐受电压试验(相间及对地)",
+          "inherits_from": "雷电冲击耐受电压试验",
+          "parameter_overrides": {
+            "试验部位": "相间及对地",
+            "试验次数": "270次"
+          }
+        }
+      ]
+    },
+    {
+      "rule_id": "insulation.gb.switching_impulse_applicability",
+      "domain": "insulation",
+      "kind": "applicability",
+      "standard": "gb",
+      "test_item": "操作冲击耐受电压试验",
+      "status": "active",
+      "allow_when_any": [
+        {
+          "source": "query",
+          "type": "greater_numeric",
+          "label": "额定电压",
+          "value": 252,
+          "unit": "kV"
+        }
+      ],
+      "deny_when_no_match": true
+    },
+    {
+      "rule_id": "insulation.gb.state_check_pf_applicability",
+      "domain": "insulation",
+      "kind": "applicability",
+      "standard": "gb",
+      "test_item": "作为状态检查的工频耐受电压试验",
+      "status": "active",
+      "allow_when_any": [
+        {
+          "source": "query",
+          "type": "contains",
+          "label": "短路性能型式试验"
+        }
+      ],
+      "deny_when_no_match": true
+    },
+    {
+      "rule_id": "insulation.gb.loop_resistance_applicability",
+      "domain": "insulation",
+      "kind": "applicability",
+      "standard": "gb",
+      "test_item": "前后回路电阻测量试验",
+      "status": "active",
+      "allow_when_any": [
+        {
+          "source": "query",
+          "type": "contains",
+          "label": "温升性能型式试验"
+        }
+      ],
+      "deny_when_no_match": true
+    },
+    {
+      "rule_id": "insulation.gb.partial_discharge_applicability",
+      "domain": "insulation",
+      "kind": "applicability",
+      "standard": "gb",
+      "test_item": "局部放电试验",
+      "status": "active",
+      "allow_when_any": [
+        {
+          "source": "query",
+          "type": "contains",
+          "label": "元件中含固封极柱"
+        },
+        {
+          "source": "query",
+          "type": "contains",
+          "label": "元件中有固封极柱"
+        },
+        {
+          "source": "query",
+          "type": "contains",
+          "label": "固封极柱"
+        },
+        {
+          "source": "query",
+          "type": "all",
+          "conditions": [
+            {
+              "source": "query",
+              "type": "regex_extract_not_equals",
+              "label": "型号名称前缀",
+              "pattern": "型号名称\\s*[：:]\\s*([A-Za-z0-9]+)",
+              "value": "VF1"
+            },
+            {
+              "source": "query",
+              "type": "equals_numeric",
+              "label": "额定电流",
+              "value": 4000,
+              "unit": "A"
+            }
+          ]
+        }
+      ],
+      "deny_when_no_match": true
+    },
+    {
+      "rule_id": "insulation.gb.partial_discharge_count",
+      "domain": "insulation",
+      "kind": "count",
+      "standard": "gb",
+      "test_item": "局部放电试验",
+      "status": "active",
+      "inputs": {
+        "power_frequency_base_labels": [
+          "额定短时工频耐受电压",
+          "额定工频耐受电压"
+        ],
+        "power_frequency_fracture_labels": [
+          "额定短时工频耐受电压(断口)",
+          "额定工频耐受电压(断口)"
+        ],
+        "lightning_base_labels": [
+          "额定雷电冲击耐受电压"
+        ],
+        "lightning_fracture_labels": [
+          "额定雷电冲击耐受电压(断口)"
+        ]
+      },
+      "decision": {
+        "count_when_fracture_strictly_greater": "9次",
+        "count_otherwise": "3次",
+        "special_priority": [
+          {
+            "when": "断口值未严格大于本体值",
+            "count": "3次"
+          }
+        ]
+      }
+    }
+  ]
+}
